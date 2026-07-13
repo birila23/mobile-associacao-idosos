@@ -1,3 +1,4 @@
+import { Stack, router } from 'expo-router';
 import { useState } from 'react';
 import {
   KeyboardAvoidingView,
@@ -9,22 +10,58 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
+ const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState(false);
+
+  const validateEmail = () => {
+    if (email.trim() === '') {
+      setEmailError('Campo obrigatório');
+      return false;
+    }
+    if (!email.includes('@')) {
+      setEmailError('O e-mail deve conter @');
+      return false;
+    }
+    setEmailError('');
+    return true;
+  };
+
+  const validatePassword = () => {
+    if (password.trim() === '') {
+      setPasswordError(true);
+      return false;
+    }
+    setPasswordError(false);
+    return true;
+  };
+
+  const handleLogin = () => {
+    const isEmailValid = validateEmail();
+    const isPasswordValid = validatePassword();
+
+    if (isEmailValid && isPasswordValid) {
+      router.replace('/home');
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} /> 
+
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           
-          {/* Cabeçalho Externo ao Card */}
+          {/* Cabeçalho */}
           <View style={styles.headerContainer}>
             <Text style={styles.mainTitle}>Apoio para Associações de Idosos</Text>
             <Text style={styles.subTitle}>
@@ -40,41 +77,67 @@ export default function LoginScreen() {
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Digite seu e-mail</Text>
               <TextInput 
-                style={styles.input}
+                style={[styles.input, !!emailError && styles.inputError]}
                 placeholder="exemplo@email.com"
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(text) => {
+                  setEmail(text);
+                  if (emailError) setEmailError(''); 
+                }}
                 keyboardType="email-address"
                 autoCapitalize="none"
+                onFocus={() => setIsTyping(true)}
+                onBlur={() => {
+                  setIsTyping(false);
+                  validateEmail();
+                }}
               />
+              {!!emailError && <Text style={styles.errorText}>{emailError}</Text>}
             </View>
 
             {/* Campo Senha */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Digite sua senha</Text>
               <TextInput 
-                style={styles.input}
+                style={[styles.input, passwordError && styles.inputError]}
                 placeholder="********"
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  if (passwordError) setPasswordError(false); 
+                }}
                 secureTextEntry
+                onFocus={() => setIsTyping(true)}
+                onBlur={() => {
+                  setIsTyping(false);
+                  validatePassword();
+                }}
               />
+              {passwordError && <Text style={styles.errorText}>Campo obrigatório</Text>}
             </View>
 
             {/* Seção Criar Conta */}
             <View style={styles.createAccountSection}>
               <Text style={styles.noAccountText}>Não possui conta?</Text>
-              <TouchableOpacity style={styles.secondaryButton}>
+              <TouchableOpacity 
+                style={styles.secondaryButton}
+                onPress={() => router.push('/cadastro')} 
+              >
                 <Text style={styles.secondaryButtonText}>Criar conta</Text>
               </TouchableOpacity>
             </View>
 
             {/* Botão Entrar */}
-            <TouchableOpacity style={styles.primaryButton}>
+            <TouchableOpacity style={styles.primaryButton} onPress={handleLogin}>
               <Text style={styles.primaryButtonText}>Entrar</Text>
             </TouchableOpacity>
-          </View>
 
+            {/* MOSTRA o "Verificando" apenas se estiver digitando */}
+            {isTyping && (
+              <Text style={styles.verifyingText}>Verificando....</Text>
+            )}
+
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -84,7 +147,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#D9D9D9', // Cor de fundo cinza do Figma
+    backgroundColor: '#D9D9D9',
   },
   scrollContainer: {
     flexGrow: 1,
@@ -142,6 +205,15 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
   },
+  inputError: {
+    borderColor: '#FF0000',
+  },
+  errorText: {
+    color: '#FF0000',
+    fontSize: 12,
+    marginTop: 5,
+    marginLeft: 5,
+  },
   createAccountSection: {
     alignItems: 'center',
     marginTop: 10,
@@ -165,7 +237,7 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   primaryButton: {
-    backgroundColor: '#E97BB5', // Cor rosa do Figma
+    backgroundColor: '#E97BB5',
     paddingVertical: 15,
     borderRadius: 12,
     alignItems: 'center',
@@ -180,4 +252,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+  verifyingText: {
+    textAlign: 'center',
+    marginTop: 15,
+    color: '#555',
+    fontSize: 14,
+  }
 });
