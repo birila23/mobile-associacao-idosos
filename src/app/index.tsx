@@ -1,6 +1,8 @@
+import axios from 'axios';
 import { Stack, router } from 'expo-router';
 import { useState } from 'react';
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -13,12 +15,14 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function LoginScreen() {
- const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [emailError, setEmailError] = useState('');
-  const [passwordError, setPasswordError] = useState(false);
+  const [senhaError, setSenhaError] = useState(false);
+  const [apiError, setApiError] = useState('');
 
   const validateEmail = () => {
     if (email.trim() === '') {
@@ -33,21 +37,46 @@ export default function LoginScreen() {
     return true;
   };
 
-  const validatePassword = () => {
-    if (password.trim() === '') {
-      setPasswordError(true);
+  const validateSenha = () => {
+    if (senha.trim() === '') {
+      setSenhaError(true);
       return false;
     }
-    setPasswordError(false);
+    setSenhaError(false);
     return true;
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     const isEmailValid = validateEmail();
-    const isPasswordValid = validatePassword();
+    const isSenhaValid = validateSenha();
 
-    if (isEmailValid && isPasswordValid) {
-      router.replace('/home');
+    if (!isEmailValid || !isSenhaValid) return;
+
+    setIsLoading(true);
+    setApiError(''); 
+
+    try {
+      const response = await axios.post('https://api-associacao-idosos.onrender.com/api/login', {
+        email: email.trim(),
+        senha: senha,
+      });
+
+      if (response.status === 200 || response.status === 201) {
+        router.replace('/home' as any);
+      }
+    } catch (error: any) {
+      console.log('Erro ao fazer login:', error);
+
+      if (error.response) {
+        const errorMessage = error.response.data?.message || 'E-mail ou senha incorretos.';
+        setApiError(errorMessage);
+      } else if (error.request) {
+        setApiError('O servidor está demorando para responder. Tente novamente em breve.');
+      } else {
+        setApiError('Ocorreu um erro ao tentar entrar. Verifique sua conexão.');
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -73,6 +102,13 @@ export default function LoginScreen() {
           <View style={styles.loginCard}>
             <Text style={styles.welcomeText}>Bem-vindo de volta</Text>
 
+            {/* Mensagem de erro */}
+            {!!apiError && (
+              <View style={styles.apiErrorBox}>
+                <Text style={styles.apiErrorText}>{apiError}</Text>
+              </View>
+            )}
+
             {/* Campo E-mail */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Digite seu e-mail</Text>
@@ -83,9 +119,11 @@ export default function LoginScreen() {
                 onChangeText={(text) => {
                   setEmail(text);
                   if (emailError) setEmailError(''); 
+                  if (apiError) setApiError('');
                 }}
                 keyboardType="email-address"
                 autoCapitalize="none"
+                editable={!isLoading} 
                 onFocus={() => setIsTyping(true)}
                 onBlur={() => {
                   setIsTyping(false);
@@ -99,21 +137,23 @@ export default function LoginScreen() {
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Digite sua senha</Text>
               <TextInput 
-                style={[styles.input, passwordError && styles.inputError]}
+                style={[styles.input, senhaError && styles.inputError]}
                 placeholder="********"
-                value={password}
+                value={senha}
                 onChangeText={(text) => {
-                  setPassword(text);
-                  if (passwordError) setPasswordError(false); 
+                  setSenha(text);
+                  if (senhaError) setSenhaError(false); 
+                  if (apiError) setApiError('');
                 }}
                 secureTextEntry
+                editable={!isLoading}
                 onFocus={() => setIsTyping(true)}
                 onBlur={() => {
                   setIsTyping(false);
-                  validatePassword();
+                  validateSenha();
                 }}
               />
-              {passwordError && <Text style={styles.errorText}>Campo obrigatório</Text>}
+              {senhaError && <Text style={styles.errorText}>Campo obrigatório</Text>}
             </View>
 
             {/* Seção Criar Conta */}
@@ -122,18 +162,27 @@ export default function LoginScreen() {
               <TouchableOpacity 
                 style={styles.secondaryButton}
                 onPress={() => router.push('/cadastro')} 
+                disabled={isLoading}
               >
                 <Text style={styles.secondaryButtonText}>Criar conta</Text>
               </TouchableOpacity>
             </View>
 
             {/* Botão Entrar */}
-            <TouchableOpacity style={styles.primaryButton} onPress={handleLogin}>
-              <Text style={styles.primaryButtonText}>Entrar</Text>
+            <TouchableOpacity 
+              style={[styles.primaryButton, isLoading && styles.buttonDisabled]} 
+              onPress={handleLogin}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.primaryButtonText}>Entrar</Text>
+              )}
             </TouchableOpacity>
 
-            {/* MOSTRA o "Verificando" apenas se estiver digitando */}
-            {isTyping && (
+            {/* Mostra "Verificando" ao digitar */}
+            {isTyping && !isLoading && (
               <Text style={styles.verifyingText}>Verificando....</Text>
             )}
 
@@ -204,6 +253,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 12,
     fontSize: 16,
+    color: '#000',
   },
   inputError: {
     borderColor: '#FF0000',
@@ -213,6 +263,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 5,
     marginLeft: 5,
+  },
+  apiErrorBox: {
+    backgroundColor: '#FFEEEE',
+    borderWidth: 1,
+    borderColor: '#FFBBBB',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 20,
+  },
+  apiErrorText: {
+    color: '#CC0000',
+    textAlign: 'center',
+    fontSize: 14,
   },
   createAccountSection: {
     alignItems: 'center',
@@ -246,6 +309,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 3,
     elevation: 3,
+  },
+  buttonDisabled: {
+    backgroundColor: '#D19EB8',
   },
   primaryButtonText: {
     color: '#FFFFFF',

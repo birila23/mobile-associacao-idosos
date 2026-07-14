@@ -1,117 +1,204 @@
+import axios from 'axios';
 import { Stack, router } from 'expo-router';
 import { useState } from 'react';
 import {
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function RegisterScreen() {
+  // Estados dos campos
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [cpf, setCpf] = useState('');
   const [senha, setSenha] = useState('');
-  
+  const [endereco, setEndereco] = useState('');
+  const [telefone, setTelefone] = useState('');
   const [tipoUsuario, setTipoUsuario] = useState('');
+  const [sexo, setSexo] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-  const [isTyping, setIsTyping] = useState(false);
+  const [isSexoDropdownOpen, setIsSexoDropdownOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
+  // Estados de erro
   const [nomeError, setNomeError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [cpfError, setCpfError] = useState('');
   const [senhaError, setSenhaError] = useState('');
+  const [enderecoError, setEnderecoError] = useState('');
+  const [telefoneError, setTelefoneError] = useState('');
   const [tipoUsuarioError, setTipoUsuarioError] = useState('');
+  const [sexoError, setSexoError] = useState('');
+  const [apiError, setApiError] = useState('');
 
   const tipos: string[] = ['coordenador', 'voluntario', 'familiar', 'enfermeiro'];
+  const opcoesSexo: string[] = ['feminino', 'masculino'];
 
-  // CORRIGIDO: Máscara progressiva à prova de falhas para o CPF
+  // Máscaras de formatação
   const formatCpf = (text: string) => {
     const nums = text.replace(/\D/g, ''); 
-    
     if (nums.length <= 3) return nums;
     if (nums.length <= 6) return nums.replace(/(\d{3})(\d{1,3})/, '$1.$2');
     if (nums.length <= 9) return nums.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
     return nums.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4').substring(0, 14);
   };
 
+  const formatTelefone = (text: string) => {
+    const nums = text.replace(/\D/g, '');
+    if (nums.length <= 2) return nums;
+    if (nums.length <= 7) return nums.replace(/(\d{2})(\d{1,5})/, '($1) $2');
+    return nums.replace(/(\d{2})(\d{5})(\d{1,4})/, '($1) $2-$3').substring(0, 15);
+  };
+
+  // Validações
   const validateNome = () => {
     if (nome.trim() === '') {
-      setNomeError('Campo obrigatório');
+      setNomeError('Campo obrigatório'); 
       return false;
     }
-    const apenasLetras = /^[A-Za-zÀ-ÿ\s]+$/.test(nome);
-    if (!apenasLetras) {
-      setNomeError('O nome deve conter apenas letras');
+    if (nome.trim().length < 3) {
+      setNomeError('Nome deve ter ao menos 3 caracteres');
       return false;
     }
-    setNomeError('');
+    setNomeError(''); 
     return true;
   };
 
   const validateEmail = () => {
     if (email.trim() === '') {
-      setEmailError('Campo obrigatório');
+      setEmailError('Campo obrigatório'); 
       return false;
     }
     if (!email.includes('@')) {
-      setEmailError('O e-mail deve conter @');
+      setEmailError('O e-mail deve conter @'); 
       return false;
     }
-    setEmailError('');
+    setEmailError(''); 
     return true;
   };
 
   const validateCpf = () => {
     const apenasNumeros = cpf.replace(/\D/g, '');
-    if (apenasNumeros === '') {
-      setCpfError('Campo obrigatório');
-      return false;
-    }
     if (apenasNumeros.length !== 11) {
-      setCpfError('CPF incompleto');
+      setCpfError('CPF incompleto'); 
       return false;
     }
-    setCpfError('');
+    setCpfError(''); 
     return true;
   };
 
   const validateSenha = () => {
     if (senha.trim() === '') {
-      setSenhaError('Campo obrigatório');
+      setSenhaError('Campo obrigatório'); 
       return false;
     }
-    setSenhaError('');
+    if (senha.length < 6) {
+      setSenhaError('Senha deve ter ao menos 6 caracteres');
+      return false;
+    }
+    setSenhaError(''); 
+    return true;
+  };
+
+  const validateEndereco = () => {
+    if (endereco.trim() === '') {
+      setEnderecoError('Campo obrigatório'); 
+      return false;
+    }
+    if (endereco.trim().length < 5) {
+      setEnderecoError('Endereço deve ter ao menos 5 caracteres');
+      return false;
+    }
+    setEnderecoError(''); 
+    return true;
+  };
+
+  const validateTelefone = () => {
+    const apenasNumeros = telefone.replace(/\D/g, '');
+    if (apenasNumeros.length < 10) {
+      setTelefoneError('Telefone inválido'); 
+      return false;
+    }
+    setTelefoneError(''); 
     return true;
   };
 
   const validateTipoUsuario = (value = tipoUsuario) => {
     if (value === '') {
-      setTipoUsuarioError('Campo obrigatório');
+      setTipoUsuarioError('Selecione um tipo'); 
       return false;
     }
-    setTipoUsuarioError('');
+    setTipoUsuarioError(''); 
     return true;
   };
 
-  const handleRegister = () => {
+  const validateSexo = (value = sexo) => {
+    if (value === '') {
+      setSexoError('Selecione o sexo'); 
+      return false;
+    }
+    setSexoError(''); 
+    return true;
+  };
+
+  // Envio dos dados para a API
+  const handleRegister = async () => {
     const isNomeValid = validateNome();
     const isEmailValid = validateEmail();
     const isCpfValid = validateCpf();
     const isSenhaValid = validateSenha();
+    const isEnderecoValid = validateEndereco();
+    const isTelefoneValid = validateTelefone();
     const isTipoValid = validateTipoUsuario();
+    const isSexoValid = validateSexo();
 
-    if (isNomeValid && isEmailValid && isCpfValid && isSenhaValid && isTipoValid) {
-      alert(`Cadastrado com sucesso como ${tipoUsuario}!`);
+    if (
+      !isNomeValid || !isEmailValid || !isCpfValid || !isSenhaValid ||
+      !isEnderecoValid || !isTelefoneValid || !isTipoValid || !isSexoValid
+    ) {
+      return; 
+    }
+
+    setIsLoading(true);
+    setApiError('');
+
+    try {
+      const response = await axios.post('https://api-associacao-idosos.onrender.com/api/cadastrarUsuario', {
+        nome: nome.trim(),
+        email: email.trim(),
+        cpf: cpf, 
+        senha: senha,
+        tipo: tipoUsuario,
+        sexo: sexo,
+        endereco: endereco.trim(),
+        telefone: telefone.replace(/\D/g, '') 
+      });
+
+      if (response.status === 200 || response.status === 201) {
+        alert('Cadastro realizado com sucesso!');
+        router.replace('/' as any); 
+      }
+    } catch (error: any) {
+      console.log('Erro no cadastro:', error);
+      if (error.response) {
+        setApiError(error.response.data?.message || 'Erro ao realizar o cadastro. Tente novamente.');
+      } else {
+        setApiError('Não foi possível conectar ao servidor.');
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  // Renderização da Tela
   return (
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} /> 
@@ -120,109 +207,129 @@ export default function RegisterScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContainer}
+          showsVerticalScrollIndicator={false}
+        >
           
-          {/* Cabeçalho */}
           <View style={styles.headerContainer}>
             <Text style={styles.mainTitle}>Apoio para Associações de Idosos</Text>
-            <Text style={styles.subTitle}>
-              Conecte-se e continue fazendo a diferença na vida dos idosos.
-            </Text>
           </View>
 
-          {/* Card de Cadastro */}
           <View style={styles.registerCard}>
             <Text style={styles.titleText}>Crie sua conta</Text>
 
-            {/* Campo Nome Completo */}
+            {!!apiError && (
+              <View style={styles.apiErrorBox}>
+                <Text style={styles.apiErrorText}>{apiError}</Text>
+              </View>
+            )}
+
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Nome completo</Text>
               <TextInput 
                 style={[styles.input, !!nomeError && styles.inputError]}
                 value={nome}
+                editable={!isLoading}
                 onChangeText={(text) => {
                   setNome(text);
                   if (nomeError) setNomeError('');
                 }}
-                onFocus={() => setIsTyping(true)}
-                onBlur={() => {
-                  setIsTyping(false);
-                  validateNome();
-                }}
+                onBlur={validateNome}
               />
               {!!nomeError && <Text style={styles.errorText}>{nomeError}</Text>}
             </View>
 
-            {/* Campo E-mail */}
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Digite seu e-mail</Text>
+              <Text style={styles.label}>E-mail</Text>
               <TextInput 
                 style={[styles.input, !!emailError && styles.inputError]}
                 value={email}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                editable={!isLoading}
                 onChangeText={(text) => {
                   setEmail(text);
                   if (emailError) setEmailError('');
                 }}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                onFocus={() => setIsTyping(true)}
-                onBlur={() => {
-                  setIsTyping(false);
-                  validateEmail();
-                }}
+                onBlur={validateEmail}
               />
               {!!emailError && <Text style={styles.errorText}>{emailError}</Text>}
             </View>
 
-            {/* Campo CPF */}
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>CPF (Somente números)</Text>
+              <Text style={styles.label}>CPF</Text>
               <TextInput 
                 style={[styles.input, !!cpfError && styles.inputError]}
                 value={cpf}
+                keyboardType="numeric"
+                editable={!isLoading}
                 onChangeText={(text) => {
                   setCpf(formatCpf(text));
                   if (cpfError) setCpfError('');
                 }}
-                keyboardType="numeric"
-                onFocus={() => setIsTyping(true)}
-                onBlur={() => {
-                  setIsTyping(false);
-                  validateCpf();
-                }}
+                onBlur={validateCpf}
               />
               {!!cpfError && <Text style={styles.errorText}>{cpfError}</Text>}
             </View>
 
-            {/* Campo Senha */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Telefone</Text>
+              <TextInput 
+                style={[styles.input, !!telefoneError && styles.inputError]}
+                value={telefone}
+                placeholder="(99) 99999-9999"
+                keyboardType="numeric"
+                editable={!isLoading}
+                onChangeText={(text) => {
+                  setTelefone(formatTelefone(text));
+                  if (telefoneError) setTelefoneError('');
+                }}
+                onBlur={validateTelefone}
+              />
+              {!!telefoneError && <Text style={styles.errorText}>{telefoneError}</Text>}
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Endereço Completo</Text>
+              <TextInput 
+                style={[styles.input, !!enderecoError && styles.inputError]}
+                value={endereco}
+                editable={!isLoading}
+                onChangeText={(text) => {
+                  setEndereco(text);
+                  if (enderecoError) setEnderecoError('');
+                }}
+                onBlur={validateEndereco}
+              />
+              {!!enderecoError && <Text style={styles.errorText}>{enderecoError}</Text>}
+            </View>
+
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Senha</Text>
               <TextInput 
                 style={[styles.input, !!senhaError && styles.inputError]}
                 value={senha}
+                secureTextEntry
+                editable={!isLoading}
                 onChangeText={(text) => {
                   setSenha(text);
                   if (senhaError) setSenhaError('');
                 }}
-                secureTextEntry
-                onFocus={() => setIsTyping(true)}
-                onBlur={() => {
-                  setIsTyping(false);
-                  validateSenha();
-                }}
+                onBlur={validateSenha}
               />
               {!!senhaError && <Text style={styles.errorText}>{senhaError}</Text>}
             </View>
 
-            {/* Campo Tipo de Usuário */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Tipo de usuário</Text>
-              
               <TouchableOpacity 
                 style={[styles.dropdownButton, !!tipoUsuarioError && styles.dropdownButtonError]} 
                 onPress={() => {
-                  setIsDropdownOpen(!isDropdownOpen);
-                  setIsTyping(!isDropdownOpen);
+                  if(!isLoading) {
+                    setIsDropdownOpen(!isDropdownOpen);
+                    setIsSexoDropdownOpen(false); 
+                  }
                 }}
                 activeOpacity={0.8}
               >
@@ -237,21 +344,14 @@ export default function RegisterScreen() {
                   {tipos.map((item) => (
                     <TouchableOpacity 
                       key={item} 
-                      style={[
-                        styles.dropdownItem, 
-                        tipoUsuario === item && styles.dropdownItemSelected
-                      ]}
+                      style={[styles.dropdownItem, tipoUsuario === item && styles.dropdownItemSelected]}
                       onPress={() => {
                         setTipoUsuario(item);
                         setIsDropdownOpen(false); 
-                        setIsTyping(false);
                         validateTipoUsuario(item);
                       }}
                     >
-                      <Text style={[
-                        styles.dropdownItemText,
-                        tipoUsuario === item && styles.dropdownItemTextSelected
-                      ]}>
+                      <Text style={[styles.dropdownItemText, tipoUsuario === item && styles.dropdownItemTextSelected]}>
                         {item}
                       </Text>
                     </TouchableOpacity>
@@ -261,26 +361,68 @@ export default function RegisterScreen() {
               {!!tipoUsuarioError && <Text style={styles.errorText}>{tipoUsuarioError}</Text>}
             </View>
 
-            {/* Seção Voltar para o Login */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Sexo</Text>
+              <TouchableOpacity 
+                style={[styles.dropdownButton, !!sexoError && styles.dropdownButtonError]} 
+                onPress={() => {
+                  if(!isLoading) {
+                    setIsSexoDropdownOpen(!isSexoDropdownOpen);
+                    setIsDropdownOpen(false); 
+                  }
+                }}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.dropdownButtonText, !sexo && styles.placeholderText]}>
+                  {sexo ? sexo : 'Selecione...'}
+                </Text>
+                <Text style={styles.arrowIcon}>{isSexoDropdownOpen ? '▲' : '▼'}</Text>
+              </TouchableOpacity>
+
+              {isSexoDropdownOpen && (
+                <View style={styles.dropdownList}>
+                  {opcoesSexo.map((item) => (
+                    <TouchableOpacity 
+                      key={item} 
+                      style={[styles.dropdownItem, sexo === item && styles.dropdownItemSelected]}
+                      onPress={() => {
+                        setSexo(item);
+                        setIsSexoDropdownOpen(false); 
+                        validateSexo(item);
+                      }}
+                    >
+                      <Text style={[styles.dropdownItemText, sexo === item && styles.dropdownItemTextSelected]}>
+                        {item}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+              {!!sexoError && <Text style={styles.errorText}>{sexoError}</Text>}
+            </View>
+
             <View style={styles.loginSection}>
               <Text style={styles.alreadyHasAccountText}>Já possui conta?</Text>
               <TouchableOpacity 
                 style={styles.secondaryButton}
-                onPress={() => router.replace('/')}
+                onPress={() => router.replace('/' as any)}
+                disabled={isLoading}
               >
                 <Text style={styles.secondaryButtonText}>Fazer login</Text>
               </TouchableOpacity>
             </View>
 
-            {/* Botão Cadastrar */}
-            <TouchableOpacity style={styles.primaryButton} onPress={handleRegister}>
-              <Text style={styles.primaryButtonText}>Cadastrar</Text>
+            <TouchableOpacity 
+              style={[styles.primaryButton, isLoading && styles.buttonDisabled]} 
+              onPress={handleRegister}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.primaryButtonText}>Cadastrar</Text>
+              )}
             </TouchableOpacity>
-
-            {/* Texto informativo */}
-            {isTyping && (
-              <Text style={styles.registeringText}>Cadastrando....</Text>
-            )}
 
           </View>
         </ScrollView>
@@ -289,6 +431,7 @@ export default function RegisterScreen() {
   );
 }
 
+// Definições de estilo
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -309,14 +452,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     textAlign: 'center',
     color: '#000',
-    marginBottom: 20,
-  },
-  subTitle: {
-    fontSize: 16,
-    textAlign: 'center',
-    color: '#333',
-    paddingHorizontal: 10,
-    lineHeight: 22,
+    marginBottom: 10,
   },
   registerCard: {
     backgroundColor: '#FFFFFF',
@@ -442,6 +578,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+  buttonDisabled: {
+    backgroundColor: '#D19EB8',
+  },
   inputError: {
     borderColor: '#FF0000',
   },
@@ -454,10 +593,17 @@ const styles = StyleSheet.create({
     marginTop: 5,
     marginLeft: 5,
   },
-  registeringText: {
+  apiErrorBox: {
+    backgroundColor: '#FFEEEE',
+    borderWidth: 1,
+    borderColor: '#FFBBBB',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 20,
+  },
+  apiErrorText: {
+    color: '#CC0000',
     textAlign: 'center',
-    marginTop: 15,
-    color: '#555',
     fontSize: 14,
   },
 });
