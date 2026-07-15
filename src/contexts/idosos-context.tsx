@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type PropsWithChildren } from 'react';
 
+import { extrairMensagemErro } from '@/services/api-client';
 import {
   atualizarIdosoRequest,
   buscarIdoso,
@@ -35,7 +36,7 @@ export function IdososProvider({ children }: PropsWithChildren) {
       const lista = await listarIdosos();
       setIdosos(lista);
     } catch (e) {
-      setErro(e instanceof Error ? e.message : 'Erro ao carregar idosos.');
+      setErro(extrairMensagemErro(e, 'Erro ao carregar idosos.'));
     } finally {
       setCarregando(false);
     }

@@ -1,32 +1,17 @@
+import { apiClient } from './api-client';
 import type { Idoso, IdosoFormValues } from '@/types/idoso';
-
-export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'https://api-associacao-idosos.onrender.com/api';
-
-async function tratarResposta<T>(resposta: Response): Promise<T> {
-  const texto = await resposta.text();
-  const dados = texto ? JSON.parse(texto) : null;
-
-  if (!resposta.ok) {
-    const mensagem = (dados && (dados.message || dados.erro)) || 'Erro ao comunicar com o servidor.';
-    throw new Error(mensagem);
-  }
-
-  return dados as T;
-}
 
 /**
  * Monta o corpo da requisição. Quando `foto` é uma uri local (escolhida no
  * dispositivo, ex.: "file:///...") envia como multipart/form-data, igual ao
- * formulário web; caso contrário envia JSON simples.
+ * formulário web; caso contrário envia os dados como objeto simples (o
+ * axios já serializa como JSON).
  */
-function montarCorpo(dados: IdosoFormValues): { headers: Record<string, string>; body: BodyInit } {
+function montarCorpo(dados: IdosoFormValues): FormData | IdosoFormValues {
   const fotoEhArquivoLocal = !!dados.foto && !dados.foto.startsWith('http');
 
   if (!fotoEhArquivoLocal) {
-    return {
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dados),
-    };
+    return dados;
   }
 
   const formData = new FormData();
@@ -45,36 +30,62 @@ function montarCorpo(dados: IdosoFormValues): { headers: Record<string, string>;
     } as unknown as Blob);
   }
 
-  return { headers: {}, body: formData };
+  return formData;
+}
+
+/**
+ * Alguns backends embrulham a resposta (ex.: { message, idoso: {...} } em
+ * vez do idoso "cru"). Essa função desembrulha antes de normalizar.
+ */
+function extrairIdosoBruto(corpo: any): any {
+  if (!corpo) return corpo;
+  if (corpo.id || corpo._id) return corpo;
+  if (corpo.idoso) return corpo.idoso;
+  if (corpo.newIdoso) return corpo.newIdoso;
+  if (corpo.data) return corpo.data;
+  return corpo;
+}
+
+function extrairLista(corpo: any): any[] {
+  if (Array.isArray(corpo)) return corpo;
+  if (Array.isArray(corpo?.idosos)) return corpo.idosos;
+  if (Array.isArray(corpo?.data)) return corpo.data;
+  return [];
+}
+
+/**
+ * Garante que todo idoso tenha `id` preenchido, mesmo que o backend
+ * retorne o identificador como `_id` (padrão do MongoDB/Mongoose).
+ */
+function normalizarIdoso(bruto: any): Idoso {
+  const objeto = extrairIdosoBruto(bruto);
+  console.log('Idoso bruto recebido da API:', objeto);
+  return {
+    ...objeto,
+    id: String(objeto.id ?? objeto._id),
+  };
 }
 
 export async function listarIdosos(): Promise<Idoso[]> {
-  const resposta = await fetch(`${API_BASE_URL}/idosos`);
-  return tratarResposta<Idoso[]>(resposta);
+  const { data } = await apiClient.get<any>('/idosos');
+  return extrairLista(data).map(normalizarIdoso);
 }
 
 export async function buscarIdoso(id: string): Promise<Idoso> {
-  const resposta = await fetch(`${API_BASE_URL}/idosos/${id}`);
-  return tratarResposta<Idoso>(resposta);
+  const { data } = await apiClient.get<any>(`/idoso/${id}`);
+  return normalizarIdoso(data);
 }
 
 export async function criarIdoso(dados: IdosoFormValues): Promise<Idoso> {
-  const { headers, body } = montarCorpo(dados);
-  const resposta = await fetch(`${API_BASE_URL}/idosos`, { method: 'POST', headers, body });
-  return tratarResposta<Idoso>(resposta);
+  const { data } = await apiClient.post<any>('/cadastrarIdoso', montarCorpo(dados));
+  return normalizarIdoso(data);
 }
 
 export async function atualizarIdosoRequest(id: string, dados: IdosoFormValues): Promise<Idoso> {
-  const { headers, body } = montarCorpo(dados);
-  const resposta = await fetch(`${API_BASE_URL}/idosos/${id}`, { method: 'PUT', headers, body });
-  return tratarResposta<Idoso>(resposta);
+  const { data } = await apiClient.put<any>(`/idoso/${id}`, montarCorpo(dados));
+  return normalizarIdoso(data);
 }
 
 export async function deletarIdosoRequest(id: string): Promise<void> {
-  const resposta = await fetch(`${API_BASE_URL}/idosos/${id}`, { method: 'DELETE' });
-  if (!resposta.ok) {
-    const texto = await resposta.text();
-    const dados = texto ? JSON.parse(texto) : null;
-    throw new Error((dados && dados.message) || 'Erro ao excluir idoso.');
-  }
+  await apiClient.delete(`/idoso/${id}`);
 }

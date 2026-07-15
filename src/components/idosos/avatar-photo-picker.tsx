@@ -4,7 +4,6 @@ import { SymbolView } from 'expo-symbols';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { IdososColors } from '@/constants/idosos-theme';
 
-
 interface AvatarPhotoPickerProps {
   uri?: string;
   size?: number;

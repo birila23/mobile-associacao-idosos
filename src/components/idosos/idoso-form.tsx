@@ -11,9 +11,10 @@ import {
 } from 'react-native';
 
 import { AvatarPhotoPicker } from '@/components/idosos/avatar-photo-picker';
-import { createShadow } from '@/utils/shadow';
-import { idosoFormValuesVazio, type IdosoFormValues, type Sexo } from '@/types/idoso';
+import { DateField } from '@/components/idosos/date-field';
 import { IdososColors, IdososRadius } from '@/constants/idosos-theme';
+import { idosoFormValuesVazio, type IdosoFormValues, type Sexo } from '@/types/idoso';
+import { createShadow } from '@/utils/shadow';
 
 interface IdosoFormProps {
   valoresIniciais?: IdosoFormValues;
@@ -40,15 +41,19 @@ export function IdosoForm({ valoresIniciais, textoBotao, onSubmit }: IdosoFormPr
     setForm((prev) => ({ ...prev, [campo]: valor }));
   };
 
+  const ehObrigatorio = (campo: keyof IdosoFormValues) => camposObrigatorios.includes(campo);
+
   const campoInvalido = (campo: keyof IdosoFormValues) =>
-    enviarVazio && camposObrigatorios.includes(campo) && !form[campo];
+    enviarVazio && ehObrigatorio(campo) && !form[campo];
 
   const handleSubmit = () => {
     setEnviarVazio(true);
-    const faltaCampo = camposObrigatorios.some((campo) => !form[campo]);
-    if (faltaCampo) {
+    const camposFaltando = camposObrigatorios.filter((campo) => !form[campo]);
+    if (camposFaltando.length > 0) {
+      console.log('Formulário bloqueado — campos obrigatórios vazios:', camposFaltando);
       return;
     }
+    console.log('Enviando formulário do idoso:', form);
     onSubmit(form);
   };
 
@@ -64,7 +69,7 @@ export function IdosoForm({ valoresIniciais, textoBotao, onSubmit }: IdosoFormPr
             onChangeUri={(uri) => setCampo('foto', uri)}
           />
 
-          <Campo label="Nome completo" invalido={campoInvalido('nome')}>
+          <Campo label="Nome completo" obrigatorio invalido={campoInvalido('nome')}>
             <TextInput
               style={[styles.input, campoInvalido('nome') && styles.inputInvalido]}
               placeholder="Nome completo"
@@ -75,18 +80,16 @@ export function IdosoForm({ valoresIniciais, textoBotao, onSubmit }: IdosoFormPr
           </Campo>
 
           <View style={styles.row}>
-            <Campo label="Data de nascimento" invalido={campoInvalido('dataNascimento')} style={styles.flex1}>
-              <TextInput
-                style={[styles.input, campoInvalido('dataNascimento') && styles.inputInvalido]}
-                placeholder="AAAA-MM-DD"
-                placeholderTextColor={IdososColors.placeholder}
+            <Campo label="Data de nascimento" obrigatorio invalido={campoInvalido('dataNascimento')} style={styles.flex1}>
+              <DateField
                 value={form.dataNascimento}
-                onChangeText={(texto) => setCampo('dataNascimento', texto)}
-                keyboardType="numbers-and-punctuation"
+                onChange={(valor) => setCampo('dataNascimento', valor)}
+                invalido={campoInvalido('dataNascimento')}
+                maximumDate={new Date()}
               />
             </Campo>
 
-            <Campo label="Sexo" invalido={campoInvalido('sexo')} style={styles.flex1}>
+            <Campo label="Sexo" obrigatorio invalido={campoInvalido('sexo')} style={styles.flex1}>
               <View style={styles.segmentedControl}>
                 <SegmentButton
                   label="Feminino"
@@ -103,7 +106,7 @@ export function IdosoForm({ valoresIniciais, textoBotao, onSubmit }: IdosoFormPr
           </View>
 
           <View style={styles.row}>
-            <Campo label="CPF" invalido={campoInvalido('cpf')} style={styles.flex1}>
+            <Campo label="CPF" obrigatorio invalido={campoInvalido('cpf')} style={styles.flex1}>
               <TextInput
                 style={[styles.input, campoInvalido('cpf') && styles.inputInvalido]}
                 placeholder="xxx.xxx.xxx-xx"
@@ -114,7 +117,7 @@ export function IdosoForm({ valoresIniciais, textoBotao, onSubmit }: IdosoFormPr
               />
             </Campo>
 
-            <Campo label="SUS" invalido={campoInvalido('sus')} style={styles.flex1}>
+            <Campo label="SUS" obrigatorio invalido={campoInvalido('sus')} style={styles.flex1}>
               <TextInput
                 style={[styles.input, campoInvalido('sus') && styles.inputInvalido]}
                 placeholder="xxxxxxxxxxxxxxx"
@@ -126,7 +129,7 @@ export function IdosoForm({ valoresIniciais, textoBotao, onSubmit }: IdosoFormPr
             </Campo>
           </View>
 
-          <Campo label="RG" invalido={campoInvalido('rg')}>
+          <Campo label="RG" obrigatorio invalido={campoInvalido('rg')}>
             <TextInput
               style={[styles.input, campoInvalido('rg') && styles.inputInvalido]}
               placeholder="x.xxx.xxx"
@@ -138,12 +141,10 @@ export function IdosoForm({ valoresIniciais, textoBotao, onSubmit }: IdosoFormPr
 
           <View style={styles.row}>
             <Campo label="Data de emissão" style={styles.flex1}>
-              <TextInput
-                style={styles.input}
-                placeholder="AAAA-MM-DD"
-                placeholderTextColor={IdososColors.placeholder}
+              <DateField
                 value={form.dataEmissaoRg}
-                onChangeText={(texto) => setCampo('dataEmissaoRg', texto)}
+                onChange={(valor) => setCampo('dataEmissaoRg', valor)}
+                maximumDate={new Date()}
               />
             </Campo>
 
@@ -158,7 +159,7 @@ export function IdosoForm({ valoresIniciais, textoBotao, onSubmit }: IdosoFormPr
             </Campo>
           </View>
 
-          <Campo label="Nacionalidade" invalido={campoInvalido('nacionalidade')}>
+          <Campo label="Nacionalidade" obrigatorio invalido={campoInvalido('nacionalidade')}>
             <TextInput
               style={[styles.input, campoInvalido('nacionalidade') && styles.inputInvalido]}
               value={form.nacionalidade}
@@ -166,7 +167,7 @@ export function IdosoForm({ valoresIniciais, textoBotao, onSubmit }: IdosoFormPr
             />
           </Campo>
 
-          <Campo label="Naturalidade" invalido={campoInvalido('naturalidade')}>
+          <Campo label="Naturalidade" obrigatorio invalido={campoInvalido('naturalidade')}>
             <TextInput
               style={[styles.input, campoInvalido('naturalidade') && styles.inputInvalido]}
               value={form.naturalidade}
@@ -185,18 +186,23 @@ export function IdosoForm({ valoresIniciais, textoBotao, onSubmit }: IdosoFormPr
 
 function Campo({
   label,
+  obrigatorio,
   invalido,
   style,
   children,
 }: {
   label: string;
+  obrigatorio?: boolean;
   invalido?: boolean;
   style?: object;
   children: React.ReactNode;
 }) {
   return (
     <View style={[styles.field, style]}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.label}>
+        {label}
+        {obrigatorio && <Text style={styles.asterisco}> *</Text>}
+      </Text>
       {children}
       {invalido && <Text style={styles.erroTexto}>Campo obrigatório</Text>}
     </View>
@@ -274,6 +280,9 @@ const styles = StyleSheet.create({
     color: IdososColors.danger,
     fontSize: 12,
     marginTop: 4,
+  },
+  asterisco: {
+    color: IdososColors.danger,
   },
   segmentedControl: {
     flexDirection: 'row',

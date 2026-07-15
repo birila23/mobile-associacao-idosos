@@ -5,22 +5,24 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { IdosoForm } from '@/components/idosos/idoso-form';
 import { ScreenHeader } from '@/components/idosos/screen-header';
-import { useIdosos } from '@/contexts/idosos-context';
 import { IdososColors } from '@/constants/idosos-theme';
+import { useIdosos } from '@/contexts/idosos-context';
+import { extrairMensagemErro } from '@/services/api-client';
 import type { IdosoFormValues } from '@/types/idoso';
 
 export default function EditarIdosoScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { getIdoso, buscarIdosoRemoto, atualizarIdoso } = useIdosos();
-  const idoso = getIdoso(id);
-  const [buscando, setBuscando] = useState(!idoso);
+  const [idoso, setIdoso] = useState(getIdoso(id));
+  const [buscando, setBuscando] = useState(true);
   const [enviando, setEnviando] = useState(false);
 
   useEffect(() => {
-    if (idoso) return;
     setBuscando(true);
-    buscarIdosoRemoto(id).finally(() => setBuscando(false));
+    buscarIdosoRemoto(id)
+      .then(setIdoso)
+      .finally(() => setBuscando(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
@@ -30,7 +32,7 @@ export default function EditarIdosoScreen() {
       await atualizarIdoso(id, dados);
       router.replace({ pathname: '/idosos/[id]', params: { id } });
     } catch (e) {
-      Alert.alert('Erro', e instanceof Error ? e.message : 'Não foi possível atualizar o idoso.');
+      Alert.alert('Erro', extrairMensagemErro(e, 'Não foi possível atualizar o idoso.'));
     } finally {
       setEnviando(false);
     }

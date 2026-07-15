@@ -5,8 +5,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ScreenHeader } from '@/components/idosos/screen-header';
 import { useIdosos } from '@/contexts/idosos-context';
-import { IdososColors, IdososRadius } from '@/constants/idosos-theme';
 import { createShadow } from '@/utils/shadow';
+import { IdososColors, IdososRadius } from '@/constants/idosos-theme';
+import { extrairMensagemErro } from '@/services/api-client';
 
 export default function DeletarIdosoScreen() {
   const router = useRouter();
@@ -29,7 +30,7 @@ export default function DeletarIdosoScreen() {
       await removerIdoso(id);
       router.replace('/idosos');
     } catch (e) {
-      Alert.alert('Erro', e instanceof Error ? e.message : 'Não foi possível excluir o idoso.');
+      Alert.alert('Erro', extrairMensagemErro(e, 'Não foi possível excluir o idoso.'));
       setExcluindo(false);
     }
   };

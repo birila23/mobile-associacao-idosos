@@ -5,8 +5,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AvatarPhotoPicker } from '@/components/idosos/avatar-photo-picker';
 import { ScreenHeader } from '@/components/idosos/screen-header';
-import { useIdosos } from '@/contexts/idosos-context';
 import { IdososColors, IdososRadius } from '@/constants/idosos-theme';
+import { useIdosos } from '@/contexts/idosos-context';
+import { extrairMensagemErro } from '@/services/api-client';
 import { createShadow } from '@/utils/shadow';
 
 function formatarData(data?: string) {
@@ -29,19 +30,23 @@ export default function PerfilIdosoScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { getIdoso, buscarIdosoRemoto } = useIdosos();
-  const idoso = getIdoso(id);
-  const [buscando, setBuscando] = useState(!idoso);
+  const idosoDaLista = getIdoso(id);
+  const [idoso, setIdoso] = useState(idosoDaLista);
+  const [buscando, setBuscando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
-    if (idoso) return;
     setBuscando(true);
     buscarIdosoRemoto(id)
-      .catch((e) => setErro(e instanceof Error ? e.message : 'Idoso não encontrado.'))
+      .then((idosoCompleto) => {
+        console.log('Idoso carregado (detalhe):', idosoCompleto);
+        setIdoso(idosoCompleto);
+      })
+      .catch((e) => setErro(extrairMensagemErro(e, 'Idoso não encontrado.')))
       .finally(() => setBuscando(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
-
+  
   if (buscando) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>

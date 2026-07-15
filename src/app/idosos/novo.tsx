@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { IdosoForm } from '@/components/idosos/idoso-form';
 import { ScreenHeader } from '@/components/idosos/screen-header';
 import { useIdosos } from '@/contexts/idosos-context';
+import { extrairMensagemErro } from '@/services/api-client';
 import { IdososColors } from '@/constants/idosos-theme';
 import type { IdosoFormValues } from '@/types/idoso';
 
@@ -20,7 +21,7 @@ export default function NovoIdosoScreen() {
       const idoso = await adicionarIdoso(dados);
       router.replace({ pathname: '/idosos/[id]', params: { id: idoso.id } });
     } catch (e) {
-      Alert.alert('Erro', e instanceof Error ? e.message : 'Não foi possível cadastrar o idoso.');
+      Alert.alert('Erro', extrairMensagemErro(e, 'Não foi possível cadastrar o idoso.'));
     } finally {
       setEnviando(false);
     }
