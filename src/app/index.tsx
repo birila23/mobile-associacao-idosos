@@ -14,6 +14,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { salvarToken } from '@/services/token-storage';
+
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -60,6 +62,16 @@ export default function LoginScreen() {
         email: email.trim(),
         senha: senha,
       });
+
+      const token =
+        response.data?.token ?? response.data?.accessToken ?? response.data?.access_token;
+
+      if (!token) {
+        setApiError('Login deu certo, mas o servidor não retornou um token.');
+        return;
+      }
+
+      await salvarToken(token);
 
       if (response.status === 200 || response.status === 201) {
         router.replace('/home' as any);
