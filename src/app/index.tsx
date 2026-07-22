@@ -2,18 +2,17 @@ import axios from 'axios';
 import { Stack, router } from 'expo-router';
 import { useState } from 'react';
 import {
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
-  TouchableOpacity,
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import Button from '@/components/Button';
+import Input from '@/components/Input';
 import { salvarToken } from '@/services/token-storage';
 
 export default function LoginScreen() {
@@ -102,7 +101,6 @@ export default function LoginScreen() {
       >
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           
-          {/* Cabeçalho */}
           <View style={styles.headerContainer}>
             <Text style={styles.mainTitle}>Apoio para Associações de Idosos</Text>
             <Text style={styles.subTitle}>
@@ -110,90 +108,71 @@ export default function LoginScreen() {
             </Text>
           </View>
 
-          {/* Card de Login */}
           <View style={styles.loginCard}>
             <Text style={styles.welcomeText}>Bem-vindo de volta</Text>
 
-            {/* Mensagem de erro */}
             {!!apiError && (
               <View style={styles.apiErrorBox}>
                 <Text style={styles.apiErrorText}>{apiError}</Text>
               </View>
             )}
 
-            {/* Campo E-mail */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Digite seu e-mail</Text>
-              <TextInput 
-                style={[styles.input, !!emailError && styles.inputError]}
-                placeholder="exemplo@email.com"
-                value={email}
-                onChangeText={(text) => {
-                  setEmail(text);
-                  if (emailError) setEmailError(''); 
-                  if (apiError) setApiError('');
-                }}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                editable={!isLoading} 
-                onFocus={() => setIsTyping(true)}
-                onBlur={() => {
-                  setIsTyping(false);
-                  validateEmail();
-                }}
-              />
-              {!!emailError && <Text style={styles.errorText}>{emailError}</Text>}
-            </View>
+            <Input
+              label="Digite seu e-mail"
+              placeholder="exemplo@email.com"
+              value={email}
+              onChangeText={(text) => {
+                setEmail(text);
+                if (emailError) setEmailError('');
+                if (apiError) setApiError('');
+              }}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              editable={!isLoading}
+              errorMessage={emailError}
+              onFocus={() => setIsTyping(true)}
+              onBlur={() => {
+                setIsTyping(false);
+                validateEmail();
+              }}
+            />
 
-            {/* Campo Senha */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Digite sua senha</Text>
-              <TextInput 
-                style={[styles.input, senhaError && styles.inputError]}
-                placeholder="********"
-                value={senha}
-                onChangeText={(text) => {
-                  setSenha(text);
-                  if (senhaError) setSenhaError(false); 
-                  if (apiError) setApiError('');
-                }}
-                secureTextEntry
-                editable={!isLoading}
-                onFocus={() => setIsTyping(true)}
-                onBlur={() => {
-                  setIsTyping(false);
-                  validateSenha();
-                }}
-              />
-              {senhaError && <Text style={styles.errorText}>Campo obrigatório</Text>}
-            </View>
+            <Input
+              label="Digite sua senha"
+              placeholder="********"
+              value={senha}
+              onChangeText={(text) => {
+                setSenha(text);
+                if (senhaError) setSenhaError(false);
+                if (apiError) setApiError('');
+              }}
+              secureTextEntry
+              editable={!isLoading}
+              errorMessage={senhaError ? 'Campo obrigatório' : undefined}
+              onFocus={() => setIsTyping(true)}
+              onBlur={() => {
+                setIsTyping(false);
+                validateSenha();
+              }}
+            />
 
-            {/* Seção Criar Conta */}
             <View style={styles.createAccountSection}>
               <Text style={styles.noAccountText}>Não possui conta?</Text>
-              <TouchableOpacity 
-                style={styles.secondaryButton}
-                onPress={() => router.push('/cadastro')} 
+              <Button
+                title="Criar conta"
+                variant="secondary"
+                onPress={() => router.push('/cadastro')}
                 disabled={isLoading}
-              >
-                <Text style={styles.secondaryButtonText}>Criar conta</Text>
-              </TouchableOpacity>
+              />
             </View>
 
-            {/* Botão Entrar */}
-            <TouchableOpacity 
-              style={[styles.primaryButton, isLoading && styles.buttonDisabled]} 
+            <Button
+              title="Entrar"
+              variant="primary"
               onPress={handleLogin}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <ActivityIndicator color="#FFFFFF" />
-              ) : (
-                <Text style={styles.primaryButtonText}>Entrar</Text>
-              )}
-            </TouchableOpacity>
+              isLoading={isLoading}
+            />
 
-            {/* Mostra "Verificando" ao digitar */}
             {isTyping && !isLoading && (
               <Text style={styles.verifyingText}>Verificando....</Text>
             )}
@@ -251,31 +230,6 @@ const styles = StyleSheet.create({
     marginBottom: 25,
     color: '#000',
   },
-  inputGroup: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 15,
-    marginBottom: 8,
-    color: '#000',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#777',
-    borderRadius: 10,
-    padding: 12,
-    fontSize: 16,
-    color: '#000',
-  },
-  inputError: {
-    borderColor: '#FF0000',
-  },
-  errorText: {
-    color: '#FF0000',
-    fontSize: 12,
-    marginTop: 5,
-    marginLeft: 5,
-  },
   apiErrorBox: {
     backgroundColor: '#FFEEEE',
     borderWidth: 1,
@@ -299,41 +253,10 @@ const styles = StyleSheet.create({
     color: '#555',
     marginBottom: 10,
   },
-  secondaryButton: {
-    backgroundColor: '#E6E6E6',
-    paddingVertical: 10,
-    paddingHorizontal: 25,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#BBB',
-  },
-  secondaryButtonText: {
-    fontSize: 14,
-    color: '#000',
-  },
-  primaryButton: {
-    backgroundColor: '#E97BB5',
-    paddingVertical: 15,
-    borderRadius: 12,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  buttonDisabled: {
-    backgroundColor: '#D19EB8',
-  },
-  primaryButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
   verifyingText: {
     textAlign: 'center',
     marginTop: 15,
     color: '#555',
     fontSize: 14,
-  }
+  },
 });
