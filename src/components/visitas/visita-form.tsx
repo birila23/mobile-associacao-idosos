@@ -59,7 +59,6 @@ export function VisitaForm({ valoresIniciais, textoBotao, onSubmit }: VisitaForm
                 value={form.dataVisita}
                 onChange={(valor) => setCampo('dataVisita', valor)}
                 invalido={campoInvalido('dataVisita')}
-                maximumDate={new Date()}
               />
             </Campo>
           </View>

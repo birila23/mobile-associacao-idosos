@@ -1,4 +1,4 @@
-import { ScreenHeader } from '@/components/idosos/screen-header';
+import { ScreenHeader } from '@/components/screen-header';
 import { FormularioColors } from '@/constants/formularios-theme';
 import { Lista } from '@/constants/lista-theme';
 import { useVisitas } from '@/contexts/visitas-context';
@@ -18,6 +18,7 @@ export default function ListaVisitasScreen() {
         <TouchableOpacity
           style={Lista.addButton}
           activeOpacity={0.85}
+          onPress={() => router.push('/visitas/adicionar')}
         >
           <Text style={Lista.addButtonText}>+ Adicionar visita</Text>
         </TouchableOpacity>
