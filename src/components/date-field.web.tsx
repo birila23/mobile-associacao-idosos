@@ -25,6 +25,7 @@ export function DateField({ value, onChange, invalido, maximumDate }: DateFieldP
   return (
     <input
       type="date"
+      lang="pt-BR"
       value={value ?? ''}
       max={maximumDate ? paraIso(maximumDate) : undefined}
       onChange={(evento: ChangeEvent<HTMLInputElement>) => onChange(evento.target.value)}

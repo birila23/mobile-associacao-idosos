@@ -10,10 +10,13 @@ export function Campo({
 }: {
   label: string;
   obrigatorio?: boolean;
-  invalido?: boolean;
+  /** `true`/`false` mostra "Campo obrigatório"; passe uma string para uma mensagem específica. */
+  invalido?: boolean | string | null;
   style?: object;
   children: React.ReactNode;
 }) {
+  const mensagemErro = typeof invalido === 'string' ? invalido : invalido ? 'Campo obrigatório' : null;
+
   return (
     <View style={[Styles.field, style]}>
       <Text style={Styles.label}>
@@ -21,7 +24,7 @@ export function Campo({
         {obrigatorio && <Text style={Styles.asterisco}> *</Text>}
       </Text>
       {children}
-      {invalido && <Text style={Styles.erroTexto}>Campo obrigatório</Text>}
+      {!!mensagemErro && <Text style={Styles.erroTexto}>{mensagemErro}</Text>}
     </View>
   );
 }

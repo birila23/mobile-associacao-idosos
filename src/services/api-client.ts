@@ -5,6 +5,10 @@ import { obterToken, removerToken } from './token-storage';
 export const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_URL ?? 'https://api-associacao-idosos.onrender.com/api';
 
+// O backend serve arquivos estáticos (ex.: fotos em /uploads/...) na raiz do
+// domínio, fora do prefixo /api — por isso precisamos da origem sem /api.
+export const API_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, '');
+
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
 });
