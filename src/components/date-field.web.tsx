@@ -1,6 +1,6 @@
 import type { ChangeEvent } from 'react';
 
-import { IdososColors, IdososRadius } from '@/constants/idosos-theme';
+import { FormularioColors, FormularioRadius } from '@/constants/formularios-theme';
 
 interface DateFieldProps {
   value?: string; // yyyy-mm-dd
@@ -31,11 +31,11 @@ export function DateField({ value, onChange, invalido, maximumDate }: DateFieldP
       style={{
         width: '100%',
         boxSizing: 'border-box',
-        border: `1px solid ${invalido ? IdososColors.danger : IdososColors.border}`,
-        borderRadius: IdososRadius.input,
+        border: `1px solid ${invalido ? FormularioColors.danger : FormularioColors.border}`,
+        borderRadius: FormularioRadius.input,
         padding: '11px 14px',
         fontSize: 15,
-        color: IdososColors.text,
+        color: FormularioColors.text,
         backgroundColor: '#FFFFFF',
         fontFamily: 'inherit',
       }}

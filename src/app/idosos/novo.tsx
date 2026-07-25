@@ -5,9 +5,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { IdosoForm } from '@/components/idosos/idoso-form';
 import { ScreenHeader } from '@/components/idosos/screen-header';
+import { FormularioColors } from '@/constants/formularios-theme';
 import { useIdosos } from '@/contexts/idosos-context';
 import { extrairMensagemErro } from '@/services/api-client';
-import { IdososColors } from '@/constants/idosos-theme';
 import type { IdosoFormValues } from '@/types/idoso';
 
 export default function NovoIdosoScreen() {
@@ -33,7 +33,7 @@ export default function NovoIdosoScreen() {
       <IdosoForm textoBotao="Enviar formulário" onSubmit={handleSubmit} />
       {enviando && (
         <View style={styles.overlay}>
-          <ActivityIndicator color={IdososColors.primary} size="large" />
+          <ActivityIndicator color={FormularioColors.primary} size="large" />
         </View>
       )}
     </SafeAreaView>
@@ -43,7 +43,7 @@ export default function NovoIdosoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: IdososColors.background,
+    backgroundColor: FormularioColors.background,
   },
   overlay: {
     ...StyleSheet.absoluteFill,

@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { IdosoForm } from '@/components/idosos/idoso-form';
 import { ScreenHeader } from '@/components/idosos/screen-header';
-import { IdososColors } from '@/constants/idosos-theme';
+import { FormularioColors } from '@/constants/formularios-theme';
 import { useIdosos } from '@/contexts/idosos-context';
 import { extrairMensagemErro } from '@/services/api-client';
 import type { IdosoFormValues } from '@/types/idoso';
@@ -43,7 +43,7 @@ export default function EditarIdosoScreen() {
       <SafeAreaView style={styles.container} edges={['top']}>
         <ScreenHeader title="Editar idoso" />
         <View style={styles.body}>
-          <ActivityIndicator color={IdososColors.primary} />
+          <ActivityIndicator color={FormularioColors.primary} />
         </View>
       </SafeAreaView>
     );
@@ -84,7 +84,7 @@ export default function EditarIdosoScreen() {
       />
       {enviando && (
         <View style={styles.overlay}>
-          <ActivityIndicator color={IdososColors.primary} size="large" />
+          <ActivityIndicator color={FormularioColors.primary} size="large" />
         </View>
       )}
     </SafeAreaView>
@@ -94,14 +94,14 @@ export default function EditarIdosoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: IdososColors.background,
+    backgroundColor: FormularioColors.background,
   },
   body: {
     flex: 1,
     padding: 20,
   },
   notFoundText: {
-    color: IdososColors.textSecondary,
+    color: FormularioColors.textSecondary,
     fontSize: 15,
     textAlign: 'center',
     marginTop: 40,

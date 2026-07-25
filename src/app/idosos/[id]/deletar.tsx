@@ -4,10 +4,10 @@ import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } fr
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ScreenHeader } from '@/components/idosos/screen-header';
+import { FormularioColors, FormularioRadius } from '@/constants/formularios-theme';
 import { useIdosos } from '@/contexts/idosos-context';
-import { createShadow } from '@/utils/shadow';
-import { IdososColors, IdososRadius } from '@/constants/idosos-theme';
 import { extrairMensagemErro } from '@/services/api-client';
+import { createShadow } from '@/utils/shadow';
 
 export default function DeletarIdosoScreen() {
   const router = useRouter();
@@ -77,7 +77,7 @@ export default function DeletarIdosoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: IdososColors.background,
+    backgroundColor: FormularioColors.background,
   },
   overlay: {
     flex: 1,
@@ -87,8 +87,8 @@ const styles = StyleSheet.create({
   },
   dialog: {
     width: '100%',
-    backgroundColor: IdososColors.card,
-    borderRadius: IdososRadius.card,
+    backgroundColor: FormularioColors.card,
+    borderRadius: FormularioRadius.card,
     padding: 26,
     alignItems: 'center',
     ...createShadow({ offsetY: 6, opacity: 0.15, radius: 14, elevation: 6 }),
@@ -96,12 +96,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '800',
-    color: IdososColors.danger,
+    color: FormularioColors.danger,
     marginBottom: 10,
   },
   message: {
     fontSize: 14,
-    color: IdososColors.textSecondary,
+    color: FormularioColors.textSecondary,
     textAlign: 'center',
     marginBottom: 22,
   },
@@ -112,8 +112,8 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     flex: 1,
-    backgroundColor: IdososColors.danger,
-    borderRadius: IdososRadius.button,
+    backgroundColor: FormularioColors.danger,
+    borderRadius: FormularioRadius.button,
     paddingVertical: 13,
     alignItems: 'center',
     justifyContent: 'center',
@@ -125,13 +125,13 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: IdososColors.neutralButton,
-    borderRadius: IdososRadius.button,
+    backgroundColor: FormularioColors.neutralButton,
+    borderRadius: FormularioRadius.button,
     paddingVertical: 13,
     alignItems: 'center',
   },
   cancelButtonText: {
-    color: IdososColors.neutralButtonText,
+    color: FormularioColors.neutralButtonText,
     fontSize: 15,
     fontWeight: '700',
   },

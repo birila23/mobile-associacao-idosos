@@ -2,7 +2,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useState } from 'react';
 import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { IdososColors, IdososRadius } from '@/constants/idosos-theme';
+import { FormularioColors, FormularioRadius } from '@/constants/formularios-theme';
 
 interface DateFieldProps {
   value?: string; // yyyy-mm-dd
@@ -81,23 +81,23 @@ export function DateField({ value, onChange, placeholder = 'Selecionar data', in
 const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
-    borderColor: IdososColors.border,
-    borderRadius: IdososRadius.input,
+    borderColor: FormularioColors.border,
+    borderRadius: FormularioRadius.input,
     paddingHorizontal: 14,
     paddingVertical: 11,
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
   },
   inputInvalido: {
-    borderColor: IdososColors.danger,
+    borderColor: FormularioColors.danger,
   },
   valor: {
     fontSize: 15,
-    color: IdososColors.text,
+    color: FormularioColors.text,
   },
   placeholder: {
     fontSize: 15,
-    color: IdososColors.placeholder,
+    color: FormularioColors.placeholder,
   },
   pickerWrapper: {
     marginTop: 6,
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
   },
   concluirButtonText: {
-    color: IdososColors.primary,
+    color: FormularioColors.primary,
     fontWeight: '700',
     fontSize: 14,
   },

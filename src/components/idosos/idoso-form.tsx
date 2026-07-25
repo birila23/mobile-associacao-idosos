@@ -1,20 +1,12 @@
 import { useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View, } from 'react-native';
 
+import { Campo } from '@/components/Campo';
+import { DateField } from '@/components/date-field';
 import { AvatarPhotoPicker } from '@/components/idosos/avatar-photo-picker';
-import { DateField } from '@/components/idosos/date-field';
-import { IdososColors, IdososRadius } from '@/constants/idosos-theme';
+import { FormularioColors, Styles } from '@/constants/formularios-theme';
 import { idosoFormValuesVazio, type IdosoFormValues, type Sexo } from '@/types/idoso';
-import { createShadow } from '@/utils/shadow';
+
 
 interface IdosoFormProps {
   valoresIniciais?: IdosoFormValues;
@@ -23,7 +15,7 @@ interface IdosoFormProps {
 }
 
 const camposObrigatorios: (keyof IdosoFormValues)[] = [
-  'nome',
+  'nome', 
   'dataNascimento',
   'sexo',
   'cpf',
@@ -50,18 +42,16 @@ export function IdosoForm({ valoresIniciais, textoBotao, onSubmit }: IdosoFormPr
     setEnviarVazio(true);
     const camposFaltando = camposObrigatorios.filter((campo) => !form[campo]);
     if (camposFaltando.length > 0) {
-      console.log('Formulário bloqueado — campos obrigatórios vazios:', camposFaltando);
       return;
     }
-    console.log('Enviando formulário do idoso:', form);
     onSubmit(form);
   };
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>I - DADOS PESSOAIS</Text>
+      <ScrollView contentContainerStyle={Styles.scrollContainer} keyboardShouldPersistTaps="handled">
+        <View style={Styles.card}>
+          <Text style={Styles.sectionTitle}>I - DADOS PESSOAIS</Text>
 
           <AvatarPhotoPicker
             uri={form.foto}
@@ -71,16 +61,16 @@ export function IdosoForm({ valoresIniciais, textoBotao, onSubmit }: IdosoFormPr
 
           <Campo label="Nome completo" obrigatorio invalido={campoInvalido('nome')}>
             <TextInput
-              style={[styles.input, campoInvalido('nome') && styles.inputInvalido]}
+              style={[Styles.input, campoInvalido('nome') && Styles.inputInvalido]}
               placeholder="Nome completo"
-              placeholderTextColor={IdososColors.placeholder}
+              placeholderTextColor={FormularioColors.placeholder}
               value={form.nome}
               onChangeText={(texto) => setCampo('nome', texto)}
             />
           </Campo>
 
-          <View style={styles.row}>
-            <Campo label="Data de nascimento" obrigatorio invalido={campoInvalido('dataNascimento')} style={styles.flex1}>
+          <View style={Styles.row}>
+            <Campo label="Data de nascimento" obrigatorio invalido={campoInvalido('dataNascimento')} style={Styles.flex1}>
               <DateField
                 value={form.dataNascimento}
                 onChange={(valor) => setCampo('dataNascimento', valor)}
@@ -89,8 +79,8 @@ export function IdosoForm({ valoresIniciais, textoBotao, onSubmit }: IdosoFormPr
               />
             </Campo>
 
-            <Campo label="Sexo" obrigatorio invalido={campoInvalido('sexo')} style={styles.flex1}>
-              <View style={styles.segmentedControl}>
+            <Campo label="Sexo" obrigatorio invalido={campoInvalido('sexo')} style={Styles.flex1}>
+              <View style={Styles.segmentedControl}>
                 <SegmentButton
                   label="Feminino"
                   selected={form.sexo === 'feminino'}
@@ -105,23 +95,23 @@ export function IdosoForm({ valoresIniciais, textoBotao, onSubmit }: IdosoFormPr
             </Campo>
           </View>
 
-          <View style={styles.row}>
-            <Campo label="CPF" obrigatorio invalido={campoInvalido('cpf')} style={styles.flex1}>
+          <View style={Styles.row}>
+            <Campo label="CPF" obrigatorio invalido={campoInvalido('cpf')} style={Styles.flex1}>
               <TextInput
-                style={[styles.input, campoInvalido('cpf') && styles.inputInvalido]}
+                style={[Styles.input, campoInvalido('cpf') && Styles.inputInvalido]}
                 placeholder="xxx.xxx.xxx-xx"
-                placeholderTextColor={IdososColors.placeholder}
+                placeholderTextColor={FormularioColors.placeholder}
                 value={form.cpf}
                 onChangeText={(texto) => setCampo('cpf', texto)}
                 keyboardType="numbers-and-punctuation"
               />
             </Campo>
 
-            <Campo label="SUS" obrigatorio invalido={campoInvalido('sus')} style={styles.flex1}>
+            <Campo label="SUS" obrigatorio invalido={campoInvalido('sus')} style={Styles.flex1}>
               <TextInput
-                style={[styles.input, campoInvalido('sus') && styles.inputInvalido]}
+                style={[Styles.input, campoInvalido('sus') && Styles.inputInvalido]}
                 placeholder="xxxxxxxxxxxxxxx"
-                placeholderTextColor={IdososColors.placeholder}
+                placeholderTextColor={FormularioColors.placeholder}
                 value={form.sus}
                 onChangeText={(texto) => setCampo('sus', texto)}
                 keyboardType="number-pad"
@@ -131,16 +121,16 @@ export function IdosoForm({ valoresIniciais, textoBotao, onSubmit }: IdosoFormPr
 
           <Campo label="RG" obrigatorio invalido={campoInvalido('rg')}>
             <TextInput
-              style={[styles.input, campoInvalido('rg') && styles.inputInvalido]}
+              style={[Styles.input, campoInvalido('rg') && Styles.inputInvalido]}
               placeholder="x.xxx.xxx"
-              placeholderTextColor={IdososColors.placeholder}
+              placeholderTextColor={FormularioColors.placeholder}
               value={form.rg}
               onChangeText={(texto) => setCampo('rg', texto)}
             />
           </Campo>
 
-          <View style={styles.row}>
-            <Campo label="Data de emissão" style={styles.flex1}>
+          <View style={Styles.row}>
+            <Campo label="Data de emissão" style={Styles.flex1}>
               <DateField
                 value={form.dataEmissaoRg}
                 onChange={(valor) => setCampo('dataEmissaoRg', valor)}
@@ -148,11 +138,11 @@ export function IdosoForm({ valoresIniciais, textoBotao, onSubmit }: IdosoFormPr
               />
             </Campo>
 
-            <Campo label="Órgão emissor" style={styles.flex1}>
+            <Campo label="Órgão emissor" style={Styles.flex1}>
               <TextInput
-                style={styles.input}
+                style={Styles.input}
                 placeholder="Exemplo: SSP-PB"
-                placeholderTextColor={IdososColors.placeholder}
+                placeholderTextColor={FormularioColors.placeholder}
                 value={form.orgaoEmissorRg}
                 onChangeText={(texto) => setCampo('orgaoEmissorRg', texto)}
               />
@@ -161,7 +151,7 @@ export function IdosoForm({ valoresIniciais, textoBotao, onSubmit }: IdosoFormPr
 
           <Campo label="Nacionalidade" obrigatorio invalido={campoInvalido('nacionalidade')}>
             <TextInput
-              style={[styles.input, campoInvalido('nacionalidade') && styles.inputInvalido]}
+              style={[Styles.input, campoInvalido('nacionalidade') && Styles.inputInvalido]}
               value={form.nacionalidade}
               onChangeText={(texto) => setCampo('nacionalidade', texto)}
             />
@@ -169,43 +159,18 @@ export function IdosoForm({ valoresIniciais, textoBotao, onSubmit }: IdosoFormPr
 
           <Campo label="Naturalidade" obrigatorio invalido={campoInvalido('naturalidade')}>
             <TextInput
-              style={[styles.input, campoInvalido('naturalidade') && styles.inputInvalido]}
+              style={[Styles.input, campoInvalido('naturalidade') && Styles.inputInvalido]}
               value={form.naturalidade}
               onChangeText={(texto) => setCampo('naturalidade', texto)}
             />
           </Campo>
 
-          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} activeOpacity={0.85}>
-            <Text style={styles.submitButtonText}>{textoBotao}</Text>
+          <TouchableOpacity style={Styles.submitButton} onPress={handleSubmit} activeOpacity={0.85}>
+            <Text style={Styles.submitButtonText}>{textoBotao}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
-  );
-}
-
-function Campo({
-  label,
-  obrigatorio,
-  invalido,
-  style,
-  children,
-}: {
-  label: string;
-  obrigatorio?: boolean;
-  invalido?: boolean;
-  style?: object;
-  children: React.ReactNode;
-}) {
-  return (
-    <View style={[styles.field, style]}>
-      <Text style={styles.label}>
-        {label}
-        {obrigatorio && <Text style={styles.asterisco}> *</Text>}
-      </Text>
-      {children}
-      {invalido && <Text style={styles.erroTexto}>Campo obrigatório</Text>}
-    </View>
   );
 }
 
@@ -220,104 +185,12 @@ function SegmentButton({
 }) {
   return (
     <TouchableOpacity
-      style={[styles.segmentButton, selected && styles.segmentButtonSelected]}
+      style={[Styles.segmentButton, selected && Styles.segmentButtonSelected]}
       onPress={onPress}
       activeOpacity={0.85}
     >
-      <Text style={[styles.segmentButtonText, selected && styles.segmentButtonTextSelected]}>{label}</Text>
+      <Text style={[Styles.segmentButtonText, selected && Styles.segmentButtonTextSelected]}>{label}</Text>
     </TouchableOpacity>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  scrollContainer: {
-    flexGrow: 1,
-    padding: 20,
-    paddingBottom: 40,
-  },
-  card: {
-    backgroundColor: IdososColors.card,
-    borderRadius: IdososRadius.card,
-    padding: 22,
-    ...createShadow({ offsetY: 4, opacity: 0.08, radius: 10, elevation: 3 }),
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: IdososColors.text,
-    marginBottom: 18,
-  },
-  row: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  flex1: {
-    flex: 1,
-  },
-  field: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 14,
-    color: IdososColors.text,
-    marginBottom: 6,
-    fontWeight: '600',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: IdososColors.border,
-    borderRadius: IdososRadius.input,
-    paddingHorizontal: 14,
-    paddingVertical: 11,
-    fontSize: 15,
-    color: IdososColors.text,
-    backgroundColor: '#FFFFFF',
-  },
-  inputInvalido: {
-    borderColor: IdososColors.danger,
-  },
-  erroTexto: {
-    color: IdososColors.danger,
-    fontSize: 12,
-    marginTop: 4,
-  },
-  asterisco: {
-    color: IdososColors.danger,
-  },
-  segmentedControl: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  segmentButton: {
-    flex: 1,
-    paddingVertical: 11,
-    borderRadius: IdososRadius.input,
-    borderWidth: 1,
-    borderColor: IdososColors.border,
-    alignItems: 'center',
-  },
-  segmentButtonSelected: {
-    backgroundColor: IdososColors.primary,
-    borderColor: IdososColors.primary,
-  },
-  segmentButtonText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: IdososColors.textSecondary,
-  },
-  segmentButtonTextSelected: {
-    color: '#FFFFFF',
-  },
-  submitButton: {
-    backgroundColor: IdososColors.success,
-    borderRadius: IdososRadius.button,
-    paddingVertical: 15,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  submitButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-});

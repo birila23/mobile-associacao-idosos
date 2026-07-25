@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AvatarPhotoPicker } from '@/components/idosos/avatar-photo-picker';
 import { ScreenHeader } from '@/components/idosos/screen-header';
-import { IdososColors, IdososRadius } from '@/constants/idosos-theme';
+import { FormularioColors, FormularioRadius } from '@/constants/formularios-theme';
 import { useIdosos } from '@/contexts/idosos-context';
 import { extrairMensagemErro } from '@/services/api-client';
 import { createShadow } from '@/utils/shadow';
@@ -52,7 +52,7 @@ export default function PerfilIdosoScreen() {
       <SafeAreaView style={styles.container} edges={['top']}>
         <ScreenHeader title="Perfil do idoso" />
         <View style={styles.body}>
-          <ActivityIndicator color={IdososColors.primary} />
+          <ActivityIndicator color={FormularioColors.primary} />
         </View>
       </SafeAreaView>
     );
@@ -115,7 +115,7 @@ export default function PerfilIdosoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: IdososColors.background,
+    backgroundColor: FormularioColors.background,
   },
   body: {
     flexGrow: 1,
@@ -123,14 +123,14 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   notFoundText: {
-    color: IdososColors.textSecondary,
+    color: FormularioColors.textSecondary,
     fontSize: 15,
     textAlign: 'center',
     marginTop: 40,
   },
   card: {
-    backgroundColor: IdososColors.card,
-    borderRadius: IdososRadius.card,
+    backgroundColor: FormularioColors.card,
+    borderRadius: FormularioRadius.card,
     padding: 22,
     ...createShadow({ offsetY: 4, opacity: 0.08, radius: 10, elevation: 3 }),
   },
@@ -141,22 +141,22 @@ const styles = StyleSheet.create({
   nome: {
     fontSize: 20,
     fontWeight: '800',
-    color: IdososColors.text,
+    color: FormularioColors.text,
     marginTop: 12,
   },
   infoRow: {
     borderBottomWidth: 1,
-    borderBottomColor: IdososColors.border,
+    borderBottomColor: FormularioColors.border,
     paddingVertical: 10,
   },
   infoLabel: {
     fontSize: 12,
-    color: IdososColors.textSecondary,
+    color: FormularioColors.textSecondary,
     marginBottom: 2,
   },
   infoValue: {
     fontSize: 15,
-    color: IdososColors.text,
+    color: FormularioColors.text,
     fontWeight: '600',
   },
   actionsRow: {
@@ -166,15 +166,15 @@ const styles = StyleSheet.create({
   },
   updateButton: {
     flex: 1,
-    backgroundColor: IdososColors.info,
-    borderRadius: IdososRadius.button,
+    backgroundColor: FormularioColors.info,
+    borderRadius: FormularioRadius.button,
     paddingVertical: 14,
     alignItems: 'center',
   },
   deleteButton: {
     flex: 1,
-    backgroundColor: IdososColors.danger,
-    borderRadius: IdososRadius.button,
+    backgroundColor: FormularioColors.danger,
+    borderRadius: FormularioRadius.button,
     paddingVertical: 14,
     alignItems: 'center',
   },

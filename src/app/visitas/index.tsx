@@ -1,28 +1,25 @@
+import { ScreenHeader } from '@/components/idosos/screen-header';
+import { FormularioColors } from '@/constants/formularios-theme';
+import { Lista } from '@/constants/lista-theme';
+import { useVisitas } from '@/contexts/visitas-context';
 import { useRouter } from 'expo-router';
 import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AvatarPhotoPicker } from '@/components/idosos/avatar-photo-picker';
-import { ScreenHeader } from '@/components/idosos/screen-header';
-import { FormularioColors } from '@/constants/formularios-theme';
-import { Lista } from '@/constants/lista-theme';
-import { useIdosos } from '@/contexts/idosos-context';
-
-export default function ListaIdososScreen() {
+export default function ListaVisitasScreen() {
   const router = useRouter();
-  const { idosos, carregando, erro, recarregar } = useIdosos();
+  const { visitas, carregando, erro, recarregar } = useVisitas();
 
   return (
     <SafeAreaView style={Lista.container} edges={['top']}>
-      <ScreenHeader title="Gerenciamento idosos" />
+      <ScreenHeader title="Gerenciamento de visitas" />
 
       <View style={Lista.body}>
         <TouchableOpacity
           style={Lista.addButton}
           activeOpacity={0.85}
-          onPress={() => router.push('/idosos/novo')}
         >
-          <Text style={Lista.addButtonText}>+ Adicionar idoso</Text>
+          <Text style={Lista.addButtonText}>+ Adicionar visita</Text>
         </TouchableOpacity>
 
         {carregando ? (
@@ -36,9 +33,9 @@ export default function ListaIdososScreen() {
               <Text style={Lista.retryButtonText}>Tentar novamente</Text>
             </TouchableOpacity>
           </View>
-        ) : idosos.length === 0 ? (
+        ) : visitas.length === 0 ? (
           <View style={Lista.emptyCard}>
-            <Text style={Lista.emptyText}>Nenhum idoso cadastrado</Text>
+            <Text style={Lista.emptyText}>Nenhuma visita cadastrada</Text>
           </View>
         ) : (
           <ScrollView
@@ -46,15 +43,13 @@ export default function ListaIdososScreen() {
             contentContainerStyle={Lista.listContent}
             refreshControl={<RefreshControl refreshing={false} onRefresh={recarregar} />}
           >
-            {idosos.map((idoso) => (
+            {visitas.map((visita) => (
               <TouchableOpacity
-                key={idoso.id}
+                key={visita.id}
                 style={Lista.listItem}
                 activeOpacity={0.7}
-                onPress={() => router.push({ pathname: '/idosos/[id]', params: { id: idoso.id } })}
               >
-                <AvatarPhotoPicker uri={idoso.foto} size={36} />
-                <Text style={Lista.listItemName}>{idoso.nome}</Text>
+                <Text style={Lista.listItemName}>{visita.nome}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>

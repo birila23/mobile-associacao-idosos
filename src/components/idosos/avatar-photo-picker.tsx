@@ -1,8 +1,8 @@
-import * as ImagePicker from 'expo-image-picker';
+import { FormularioColors } from '@/constants/formularios-theme';
 import { Image } from 'expo-image';
+import * as ImagePicker from 'expo-image-picker';
 import { SymbolView } from 'expo-symbols';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { IdososColors } from '@/constants/idosos-theme';
 
 interface AvatarPhotoPickerProps {
   uri?: string;
@@ -48,7 +48,7 @@ export function AvatarPhotoPicker({ uri, size = 88, editable = false, onChangeUr
         <SymbolView
           name={{ ios: 'person.fill', android: 'person', web: 'person' }}
           size={iconSize}
-          tintColor={IdososColors.placeholder}
+          tintColor={FormularioColors.placeholder}
         />
       )}
       {editable && (
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     width: 26,
     height: 26,
     borderRadius: 13,
-    backgroundColor: IdososColors.primary,
+    backgroundColor: FormularioColors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
@@ -104,6 +104,6 @@ const styles = StyleSheet.create({
   helperText: {
     marginTop: 8,
     fontSize: 13,
-    color: IdososColors.textSecondary,
+    color: FormularioColors.textSecondary,
   },
 });

@@ -1,8 +1,8 @@
+import { FormularioColors } from '@/constants/formularios-theme';
+import { createShadow } from '@/utils/shadow';
 import { useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { createShadow } from '@/utils/shadow';
-import { IdososColors } from '@/constants/idosos-theme';
 
 interface ScreenHeaderProps {
   title: string;
@@ -30,7 +30,7 @@ export function ScreenHeader({ title, titleColor, onBackPress }: ScreenHeaderPro
           name={{ ios: 'chevron.left', android: 'chevron_left', web: 'chevron_left' }}
           size={18}
           weight="semibold"
-          tintColor={IdososColors.text}
+          tintColor={FormularioColors.text}
         />
       </TouchableOpacity>
       <Text style={[styles.title, titleColor ? { color: titleColor } : null]} numberOfLines={1}>
@@ -45,17 +45,17 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: IdososColors.headerBackground,
+    backgroundColor: FormularioColors.headerBackground,
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: IdososColors.border,
+    borderBottomColor: FormularioColors.border,
   },
   backButton: {
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: IdososColors.card,
+    backgroundColor: FormularioColors.card,
     alignItems: 'center',
     justifyContent: 'center',
     ...createShadow({ offsetY: 1, opacity: 0.15, radius: 2, elevation: 2 }),
@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 17,
     fontWeight: '700',
-    color: IdososColors.text,
+    color: FormularioColors.text,
   },
   spacer: {
     width: 34,
