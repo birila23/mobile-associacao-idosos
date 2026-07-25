@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { FormularioColors, FormularioRadius } from '@/constants/formularios-theme';
+import { formatarDataExibicao, normalizarDataParaInput, paraDataDate } from '@/utils/date';
 
 interface DateFieldProps {
   value?: string; // yyyy-mm-dd
@@ -12,25 +13,11 @@ interface DateFieldProps {
   maximumDate?: Date;
 }
 
-function paraData(valor?: string): Date {
-  if (!valor) return new Date();
-  const [ano, mes, dia] = valor.split('-').map(Number);
-  if (!ano || !mes || !dia) return new Date();
-  return new Date(ano, mes - 1, dia);
-}
-
 function paraIso(data: Date): string {
   const ano = data.getFullYear();
   const mes = String(data.getMonth() + 1).padStart(2, '0');
   const dia = String(data.getDate()).padStart(2, '0');
   return `${ano}-${mes}-${dia}`;
-}
-
-function formatarExibicao(valor?: string): string | null {
-  if (!valor) return null;
-  const [ano, mes, dia] = valor.split('-');
-  if (!ano || !mes || !dia) return valor;
-  return `${dia}/${mes}/${ano}`;
 }
 
 /**
@@ -40,7 +27,7 @@ function formatarExibicao(valor?: string): string | null {
  */
 export function DateField({ value, onChange, placeholder = 'Selecionar data', invalido, maximumDate }: DateFieldProps) {
   const [aberto, setAberto] = useState(false);
-  const exibicao = formatarExibicao(value);
+  const exibicao = formatarDataExibicao(value);
 
   const handleChange = (evento: { type: string }, dataSelecionada?: Date) => {
     if (Platform.OS === 'android') setAberto(false);
@@ -61,7 +48,7 @@ export function DateField({ value, onChange, placeholder = 'Selecionar data', in
       {aberto && (
         <View style={styles.pickerWrapper}>
           <DateTimePicker
-            value={paraData(value)}
+            value={paraDataDate(value)}
             mode="date"
             display={Platform.OS === 'ios' ? 'spinner' : 'default'}
             maximumDate={maximumDate}

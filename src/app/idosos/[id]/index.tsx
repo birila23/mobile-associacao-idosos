@@ -8,14 +8,8 @@ import { ScreenHeader } from '@/components/idosos/screen-header';
 import { FormularioColors, FormularioRadius } from '@/constants/formularios-theme';
 import { useIdosos } from '@/contexts/idosos-context';
 import { extrairMensagemErro } from '@/services/api-client';
+import { formatarDataExibicao } from '@/utils/date';
 import { createShadow } from '@/utils/shadow';
-
-function formatarData(data?: string) {
-  if (!data) return '-';
-  const [ano, mes, dia] = data.split('-');
-  if (!ano || !mes || !dia) return data;
-  return `${dia}/${mes}/${ano}`;
-}
 
 function InfoRow({ label, value }: { label: string; value?: string }) {
   return (
@@ -82,10 +76,10 @@ export default function PerfilIdosoScreen() {
 
           <InfoRow label="CPF" value={idoso.cpf} />
           <InfoRow label="RG" value={idoso.rg} />
-          <InfoRow label="Data de emissão do RG" value={formatarData(idoso.dataEmissaoRg)} />
+          <InfoRow label="Data de emissão do RG" value={formatarDataExibicao(idoso.dataEmissaoRg) ?? '-'} />
           <InfoRow label="Órgão Emissor de RG" value={idoso.orgaoEmissorRg} />
           <InfoRow label="SUS" value={idoso.sus} />
-          <InfoRow label="Data de nascimento" value={formatarData(idoso.dataNascimento)} />
+          <InfoRow label="Data de nascimento" value={formatarDataExibicao(idoso.dataNascimento) ?? '-'} />
           <InfoRow label="Sexo" value={idoso.sexo === 'feminino' ? 'Feminino' : idoso.sexo === 'masculino' ? 'Masculino' : '-'} />
           <InfoRow label="Naturalidade" value={idoso.naturalidade} />
           <InfoRow label="Nacionalidade" value={idoso.nacionalidade} />

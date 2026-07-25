@@ -1,6 +1,7 @@
 import type { ChangeEvent } from 'react';
 
 import { FormularioColors, FormularioRadius } from '@/constants/formularios-theme';
+import { normalizarDataParaInput } from '@/utils/date';
 
 interface DateFieldProps {
   value?: string; // yyyy-mm-dd
@@ -26,7 +27,7 @@ export function DateField({ value, onChange, invalido, maximumDate }: DateFieldP
     <input
       type="date"
       lang="pt-BR"
-      value={value ?? ''}
+      value={normalizarDataParaInput(value)}
       max={maximumDate ? paraIso(maximumDate) : undefined}
       onChange={(evento: ChangeEvent<HTMLInputElement>) => onChange(evento.target.value)}
       style={{
