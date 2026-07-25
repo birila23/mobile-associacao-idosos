@@ -3,7 +3,7 @@ import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, 
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AvatarPhotoPicker } from '@/components/idosos/avatar-photo-picker';
-import { ScreenHeader } from '@/components/idosos/screen-header';
+import { ScreenHeader } from '@/components/screen-header';
 import { FormularioColors } from '@/constants/formularios-theme';
 import { Lista } from '@/constants/lista-theme';
 import { useIdosos } from '@/contexts/idosos-context';

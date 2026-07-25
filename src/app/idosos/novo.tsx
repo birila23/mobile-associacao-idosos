@@ -1,14 +1,14 @@
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { ActivityIndicator, Alert, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { IdosoForm } from '@/components/idosos/idoso-form';
-import { ScreenHeader } from '@/components/idosos/screen-header';
+import { ScreenHeader } from '@/components/screen-header';
+import { Adicionar } from '@/constants/adicionar-theme';
 import { FormularioColors } from '@/constants/formularios-theme';
 import { useIdosos } from '@/contexts/idosos-context';
 import { extrairMensagemErro } from '@/services/api-client';
 import type { IdosoFormValues } from '@/types/idoso';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { ActivityIndicator, Alert, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function NovoIdosoScreen() {
   const router = useRouter();
@@ -28,27 +28,14 @@ export default function NovoIdosoScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={Adicionar.container} edges={['top']}>
       <ScreenHeader title="Novo Idoso" />
       <IdosoForm textoBotao="Enviar formulário" onSubmit={handleSubmit} />
       {enviando && (
-        <View style={styles.overlay}>
+        <View style={Adicionar.overlay}>
           <ActivityIndicator color={FormularioColors.primary} size="large" />
         </View>
       )}
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: FormularioColors.background,
-  },
-  overlay: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(0,0,0,0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

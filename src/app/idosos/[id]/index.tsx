@@ -4,7 +4,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AvatarPhotoPicker } from '@/components/idosos/avatar-photo-picker';
-import { ScreenHeader } from '@/components/idosos/screen-header';
+import { ScreenHeader } from '@/components/screen-header';
 import { FormularioColors, FormularioRadius } from '@/constants/formularios-theme';
 import { useIdosos } from '@/contexts/idosos-context';
 import { extrairMensagemErro } from '@/services/api-client';

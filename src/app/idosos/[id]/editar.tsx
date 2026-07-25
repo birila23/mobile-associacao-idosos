@@ -4,7 +4,7 @@ import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { IdosoForm } from '@/components/idosos/idoso-form';
-import { ScreenHeader } from '@/components/idosos/screen-header';
+import { ScreenHeader } from '@/components/screen-header';
 import { FormularioColors } from '@/constants/formularios-theme';
 import { useIdosos } from '@/contexts/idosos-context';
 import { extrairMensagemErro } from '@/services/api-client';
