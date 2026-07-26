@@ -1,12 +1,12 @@
 export interface Visita {
   id: string;
   nome: string
-  dataVisita: string
+  data: string
 }
 
 export type VisitaFormValues = Omit<Visita, 'id'>;
 
 export const visitaFormValuesVazio: VisitaFormValues = {
   nome: '',
-  dataVisita: '',
+  data: '',
 };

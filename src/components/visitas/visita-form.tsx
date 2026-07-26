@@ -14,7 +14,7 @@ interface VisitaFormProps {
 
 const camposObrigatorios: (keyof VisitaFormValues)[] = [
   'nome', 
-  'dataVisita',
+  'data',
 ];
 
 export function VisitaForm({ valoresIniciais, textoBotao, onSubmit }: VisitaFormProps) {
@@ -54,11 +54,11 @@ export function VisitaForm({ valoresIniciais, textoBotao, onSubmit }: VisitaForm
           </Campo>
 
           <View style={Styles.row}>
-            <Campo label="Data da Visita" obrigatorio invalido={campoInvalido('dataVisita')} style={Styles.flex1}>
+            <Campo label="Data da Visita" obrigatorio invalido={campoInvalido('data')} style={Styles.flex1}>
               <DateField
-                value={form.dataVisita}
-                onChange={(valor) => setCampo('dataVisita', valor)}
-                invalido={campoInvalido('dataVisita')}
+                value={form.data}
+                onChange={(valor) => setCampo('data', valor)}
+                invalido={campoInvalido('data')}
               />
             </Campo>
           </View>

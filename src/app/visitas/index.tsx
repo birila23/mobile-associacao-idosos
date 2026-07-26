@@ -49,6 +49,7 @@ export default function ListaVisitasScreen() {
                 key={visita.id}
                 style={Lista.listItem}
                 activeOpacity={0.7}
+                onPress={() => router.push({ pathname: '/visitas/[id]', params: { id: visita.id } })}
               >
                 <Text style={Lista.listItemName}>{visita.nome}</Text>
               </TouchableOpacity>

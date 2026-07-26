@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type PropsWithChildren } from 'react';
 
 import { extrairMensagemErro } from '@/services/api-client';
-import { atualizarVisitaRequest, criarVisita, deletarVisitaRequest, listarVisitas } from '@/services/visitas-api';
+import { atualizarVisitaRequest, buscarVisita, criarVisita, deletarVisitaRequest, listarVisitas } from '@/services/visitas-api';
 import type { Visita, VisitaFormValues } from '@/types/visita';
 
 interface VisitasContextValue {
@@ -10,6 +10,7 @@ interface VisitasContextValue {
     erro: string | null;
     recarregar: () => Promise<void>;
     listarVisita: (id: string) => Visita | undefined;
+    buscarVisitaRemoto: (id: string) => Promise<Visita>;
     adicionarVisita: (dados: VisitaFormValues) => Promise<Visita>;
     atualizarVisita: (id: string, dados: VisitaFormValues) => Promise<Visita>;
     removerVisita: (id: string) => Promise<void>;
@@ -41,6 +42,15 @@ export function VisitasProvider({ children }: PropsWithChildren) {
 
     const listarVisita = useCallback((id: string) => visitas.find((visita) => visita.id === id), [visitas]);
 
+    const buscarVisitaRemoto = useCallback(async (id: string) => {
+        const visita = await buscarVisita(id);
+        setVisitas((prev) => {
+            const existe = prev.some((item) => item.id === id);
+            return existe ? prev.map((item) => (item.id === id ? visita : item)) : [visita, ...prev];
+        });
+        return visita;
+    }, []);
+
     const adicionarVisita = useCallback(async (dados: VisitaFormValues) => {
         const novoVisita = await criarVisita(dados);
         setVisitas((prev) => [novoVisita, ...prev]);
@@ -65,11 +75,12 @@ export function VisitasProvider({ children }: PropsWithChildren) {
             erro,
             recarregar,
             listarVisita,
+            buscarVisitaRemoto,
             adicionarVisita,
             atualizarVisita,
             removerVisita,
         }),
-        [visitas, carregando, erro, recarregar, listarVisita, adicionarVisita, atualizarVisita, removerVisita],
+        [visitas, carregando, erro, recarregar, listarVisita, buscarVisitaRemoto, adicionarVisita, atualizarVisita, removerVisita],
     );
 
     return <VisitasContext.Provider value={value}>{children}</VisitasContext.Provider>;
