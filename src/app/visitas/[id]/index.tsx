@@ -1,22 +1,14 @@
+import { InfoRow } from '@/components/info-row';
 import { ScreenHeader } from '@/components/screen-header';
-import { FormularioColors, FormularioRadius } from '@/constants/formularios-theme';
+import { FormularioColors } from '@/constants/formularios-theme';
+import { Perfil } from '@/constants/perfil-theme';
 import { useVisitas } from '@/contexts/visitas-context';
 import { extrairMensagemErro } from '@/services/api-client';
 import { formatarDataExibicao } from '@/utils/date';
-import { createShadow } from '@/utils/shadow';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-function InfoRow({ label, value }: { label: string; value?: string }) {
-  return (
-    <View style={styles.infoRow}>
-      <Text style={styles.infoLabel}>{label}</Text>
-      <Text style={styles.infoValue}>{value?.trim() ? value : '-'}</Text>
-    </View>
-  );
-}
 
 export default function PerfilVisitaScreen() {
   const router = useRouter();
@@ -39,9 +31,9 @@ export default function PerfilVisitaScreen() {
   
   if (buscando) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <SafeAreaView style={Perfil.container} edges={['top']}>
         <ScreenHeader title="Visita" />
-        <View style={styles.body}>
+        <View style={Perfil.body}>
           <ActivityIndicator color={FormularioColors.primary} />
         </View>
       </SafeAreaView>
@@ -50,38 +42,38 @@ export default function PerfilVisitaScreen() {
 
   if (!visita) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <SafeAreaView style={Perfil.container} edges={['top']}>
         <ScreenHeader title="Visita" />
-        <View style={styles.body}>
-          <Text style={styles.notFoundText}>{erro ?? 'Visita não encontrada.'}</Text>
+        <View style={Perfil.body}>
+          <Text style={Perfil.notFoundText}>{erro ?? 'Visita não encontrada.'}</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={Perfil.container} edges={['top']}>
       <ScreenHeader title="Visita" />
 
-      <ScrollView contentContainerStyle={styles.body}>
-        <View style={styles.card}>
+      <ScrollView contentContainerStyle={Perfil.body}>
+        <View style={Perfil.card}>
           <InfoRow label="Nome" value={visita.nome} />
           <InfoRow label="Data da visita" value={formatarDataExibicao(visita.data) ?? '-'} />
 
-          <View style={styles.actionsRow}>
+          <View style={Perfil.actionsRow}>
             <TouchableOpacity
-              style={styles.updateButton}
+              style={Perfil.updateButton}
               activeOpacity={0.85}
-              onPress={() => router.push({ pathname: '/visitas/[id]/editar', params: { id: visita.id } })}
+              onPress={() => router.push({ pathname: '/visitas/[id]/editar', params: { id } })}
             >
-              <Text style={styles.actionButtonText}>Atualizar</Text>
+              <Text style={Perfil.actionButtonText}>Atualizar</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.deleteButton}
+              style={Perfil.deleteButton}
               activeOpacity={0.85}
-              onPress={() => router.push({ pathname: '/visitas/[id]/deletar', params: { id: visita.id } })}
+              onPress={() => router.push({ pathname: '/visitas/[id]/deletar', params: { id } })}
             >
-              <Text style={styles.actionButtonText}>Deletar</Text>
+              <Text style={Perfil.actionButtonText}>Deletar</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -89,76 +81,3 @@ export default function PerfilVisitaScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: FormularioColors.background,
-  },
-  body: {
-    flexGrow: 1,
-    padding: 20,
-    paddingBottom: 40,
-  },
-  notFoundText: {
-    color: FormularioColors.textSecondary,
-    fontSize: 15,
-    textAlign: 'center',
-    marginTop: 40,
-  },
-  card: {
-    backgroundColor: FormularioColors.card,
-    borderRadius: FormularioRadius.card,
-    padding: 22,
-    ...createShadow({ offsetY: 4, opacity: 0.08, radius: 10, elevation: 3 }),
-  },
-  avatarSection: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  nome: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: FormularioColors.text,
-    marginTop: 12,
-  },
-  infoRow: {
-    borderBottomWidth: 1,
-    borderBottomColor: FormularioColors.border,
-    paddingVertical: 10,
-  },
-  infoLabel: {
-    fontSize: 12,
-    color: FormularioColors.textSecondary,
-    marginBottom: 2,
-  },
-  infoValue: {
-    fontSize: 15,
-    color: FormularioColors.text,
-    fontWeight: '600',
-  },
-  actionsRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 22,
-  },
-  updateButton: {
-    flex: 1,
-    backgroundColor: FormularioColors.info,
-    borderRadius: FormularioRadius.button,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  deleteButton: {
-    flex: 1,
-    backgroundColor: FormularioColors.danger,
-    borderRadius: FormularioRadius.button,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  actionButtonText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '700',
-  },
-});
