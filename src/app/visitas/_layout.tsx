@@ -29,7 +29,7 @@ export default function VisitasLayout() {
     <VisitasProvider>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
-        <Stack.Screen name="adicionar" />
+        <Stack.Screen name="novo" />
         <Stack.Screen name="[id]/index" />
         <Stack.Screen name="[id]/editar" />
         <Stack.Screen name="[id]/deletar" />
