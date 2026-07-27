@@ -3,36 +3,37 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { IdosoForm } from '@/components/idosos/idoso-form';
 import { ScreenHeader } from '@/components/screen-header';
+import { VisitaForm } from '@/components/visitas/visita-form';
 import { Editar } from '@/constants/editar-theme';
 import { FormularioColors } from '@/constants/formularios-theme';
-import { useIdosos } from '@/contexts/idosos-context';
+import { useVisitas } from '@/contexts/visitas-context';
 import { extrairMensagemErro } from '@/services/api-client';
-import type { IdosoFormValues } from '@/types/idoso';
+import type { VisitaFormValues } from '@/types/visita';
 
-export default function EditarIdosoScreen() {
+export default function EditarVisitaScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { getIdoso, buscarIdosoRemoto, atualizarIdoso } = useIdosos();
-  const [idoso, setIdoso] = useState(getIdoso(id));
+  const { listarVisita, buscarVisitaRemoto, atualizarVisita } = useVisitas();
+  const [visita, setVisita] = useState(listarVisita(id));
   const [buscando, setBuscando] = useState(true);
   const [enviando, setEnviando] = useState(false);
+  
 
-  useEffect(() => {
+useEffect(() => {
     setBuscando(true);
-    buscarIdosoRemoto(id)
-      .then(setIdoso)
+    buscarVisitaRemoto(id)
+      .then(setVisita)
       .finally(() => setBuscando(false));
   }, [id]);
 
-  const handleSubmit = async (dados: IdosoFormValues) => {
+  const handleSubmit = async (dados: VisitaFormValues) => {
     setEnviando(true);
     try {
-      await atualizarIdoso(id, dados);
-      router.replace({ pathname: '/idosos/[id]', params: { id } });
+      await atualizarVisita(id, dados);
+      router.replace({ pathname: '/visitas/[id]', params: { id } });
     } catch (e) {
-      Alert.alert('Erro', extrairMensagemErro(e, 'Não foi possível atualizar o idoso.'));
+      Alert.alert('Erro', extrairMensagemErro(e, 'Não foi possível atualizar a visita.'));
     } finally {
       setEnviando(false);
     }
@@ -41,7 +42,7 @@ export default function EditarIdosoScreen() {
   if (buscando) {
     return (
       <SafeAreaView style={Editar.container} edges={['top']}>
-        <ScreenHeader title="Editar idoso" />
+        <ScreenHeader title="Editar visita" />
         <View style={Editar.body}>
           <ActivityIndicator color={FormularioColors.primary} />
         </View>
@@ -49,35 +50,26 @@ export default function EditarIdosoScreen() {
     );
   }
 
-  if (!idoso) {
+  if (!visita) {
     return (
       <SafeAreaView style={Editar.container} edges={['top']}>
-        <ScreenHeader title="Editar idoso" />
+        <ScreenHeader title="Editar visita" />
         <View style={Editar.body}>
-          <Text style={Editar.notFoundText}>Idoso não encontrado.</Text>
+          <Text style={Editar.notFoundText}>Visita não encontrada.</Text>
         </View>
       </SafeAreaView>
     );
   }
 
-  const valoresIniciais: IdosoFormValues = {
-    foto: idoso.foto,
-    nome: idoso.nome,
-    dataNascimento: idoso.dataNascimento,
-    sexo: idoso.sexo,
-    cpf: idoso.cpf,
-    rg: idoso.rg,
-    dataEmissaoRg: idoso.dataEmissaoRg,
-    orgaoEmissorRg: idoso.orgaoEmissorRg,
-    sus: idoso.sus,
-    nacionalidade: idoso.nacionalidade,
-    naturalidade: idoso.naturalidade,
+  const valoresIniciais: VisitaFormValues = {
+    nome: visita.nome,
+    data: visita.data,
   };
 
   return (
     <SafeAreaView style={Editar.container} edges={['top']}>
-      <ScreenHeader title="Editar idoso" />
-      <IdosoForm
+      <ScreenHeader title="Editar visita" />
+      <VisitaForm
         valoresIniciais={valoresIniciais}
         textoBotao="Enviar atualização"
         onSubmit={handleSubmit}
