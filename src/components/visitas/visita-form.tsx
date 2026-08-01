@@ -1,65 +1,70 @@
-import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View, } from 'react-native';
-
 import { Campo } from '@/components/Campo';
 import { DateField } from '@/components/date-field';
 import { FormularioColors, Styles } from '@/constants/formularios-theme';
-import { visitaFormValuesVazio, type VisitaFormValues } from '@/types/visita';
+import { visitaSchema, type VisitaFormValues } from '@/validacao/visitas';
+import { useState } from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 interface VisitaFormProps {
-  valoresIniciais?: VisitaFormValues;
+  valoresIniciais?: Partial<VisitaFormValues>;
   textoBotao: string;
   onSubmit: (dados: VisitaFormValues) => void;
 }
 
-const camposObrigatorios: (keyof VisitaFormValues)[] = [
-  'nome', 
-  'data',
-];
-
 export function VisitaForm({ valoresIniciais, textoBotao, onSubmit }: VisitaFormProps) {
-  const [form, setForm] = useState<VisitaFormValues>(valoresIniciais ?? visitaFormValuesVazio);
-  const [enviarVazio, setEnviarVazio] = useState(false);
+  const [form, setForm] = useState<Partial<VisitaFormValues>>(valoresIniciais ?? {});
+  const [erros, setErros] = useState<Record<string, string>>({});
 
   const setCampo = <K extends keyof VisitaFormValues>(campo: K, valor: VisitaFormValues[K]) => {
     setForm((prev) => ({ ...prev, [campo]: valor }));
+    
+    if (erros[campo]) {
+      setErros((prev) => ({ ...prev, [campo]: '' }));
+    }
   };
 
-  const ehObrigatorio = (campo: keyof VisitaFormValues) => camposObrigatorios.includes(campo);
-
-  const campoInvalido = (campo: keyof VisitaFormValues) =>
-    enviarVazio && ehObrigatorio(campo) && !form[campo];
-
   const handleSubmit = () => {
-    setEnviarVazio(true);
-    const camposFaltando = camposObrigatorios.filter((campo) => !form[campo]);
-    if (camposFaltando.length > 0) {
+    const result = visitaSchema.safeParse(form);
+
+    if (!result.success) {
+
+      const novosErros: Record<string, string> = {};
+      result.error.issues.forEach((issue) => {
+        const campo = issue.path[0] as string;
+        novosErros[campo] = issue.message;
+      });
+
+      setErros(novosErros);
       return;
     }
-    onSubmit(form);
+
+    setErros({});
+    onSubmit(result.data);
   };
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={Styles.scrollContainer} keyboardShouldPersistTaps="handled">
         <View style={Styles.card}>
-          <Campo label="Nome completo" obrigatorio invalido={campoInvalido('nome')}>
+
+          <Campo label="Nome completo" obrigatorio invalido={!!erros.nome}>
             <TextInput
-              style={[Styles.input, campoInvalido('nome') && Styles.inputInvalido]}
+              style={[Styles.input, !!erros.nome && Styles.inputInvalido]}
               placeholder="Nome completo"
               placeholderTextColor={FormularioColors.placeholder}
-              value={form.nome}
+              value={form.nome ?? ''}
               onChangeText={(texto) => setCampo('nome', texto)}
             />
+            {erros.nome && <Text style={Styles.erroTexto}>{erros.nome}</Text>}
           </Campo>
-
           <View style={Styles.row}>
-            <Campo label="Data da Visita" obrigatorio invalido={campoInvalido('data')} style={Styles.flex1}>
+            <Campo label="Data da Visita" obrigatorio invalido={!!erros.data} style={Styles.flex1}>
               <DateField
                 value={form.data}
                 onChange={(valor) => setCampo('data', valor)}
-                invalido={campoInvalido('data')}
+                invalido={!!erros.data}
               />
+              {erros.data && <Text style={Styles.erroTexto}>{erros.data}</Text>}
             </Campo>
           </View>
 
