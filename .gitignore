@@ -5,6 +5,7 @@ node_modules/
 *.claude/
 *.rtk/
 *CLAUDE.md
+AGENTS.md
 # Expo
 .expo/
 dist/
