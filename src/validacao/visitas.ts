@@ -1,3 +1,4 @@
+// @/schemas/visita.ts
 import { z } from 'zod';
 
 export const visitaSchema = z.object({
@@ -6,10 +7,8 @@ export const visitaSchema = z.object({
     .trim()
     .min(3, 'Nome deve ter ao menos 3 caracteres'),
   data: z.string({
-    required_error: 'A data da visita é obrigatória',
-    invalid_type_error: 'Data inválida',
-  }),
+    required_error: 'A data da visita é obrigatória'
+  })
 });
-
 
 export type VisitaFormValues = z.infer<typeof visitaSchema>;

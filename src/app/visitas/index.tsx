@@ -19,7 +19,7 @@ export default function ListaVisitasScreen() {
   };
 
   const visitasFiltradas = visitas.filter((visita) =>
-    visita.nome.toLowerCase().includes(filtroAplicado.trim().toLowerCase())
+    (visita.nome ?? '').toLowerCase().includes(filtroAplicado.trim().toLowerCase())
   );
 
   return (
@@ -30,7 +30,7 @@ export default function ListaVisitasScreen() {
         <TouchableOpacity
           style={Lista.addButton}
           activeOpacity={0.85}
-          onPress={() => router.push('/visitas/adicionar')}
+          onPress={() => router.push('/visitas/novo')}
         >
           <Text style={Lista.addButtonText}>+ Nova Visita</Text>
         </TouchableOpacity>

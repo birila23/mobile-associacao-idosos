@@ -1,5 +1,5 @@
 import { Styles } from '@/constants/formularios-theme';
-import { Text, View, } from 'react-native';
+import { Text, View } from 'react-native';
 
 export function Campo({
   label,
@@ -10,12 +10,12 @@ export function Campo({
 }: {
   label: string;
   obrigatorio?: boolean;
-  /** `true`/`false` mostra "Campo obrigatório"; passe uma string para uma mensagem específica. */
   invalido?: boolean | string | null;
   style?: object;
   children: React.ReactNode;
 }) {
-  const mensagemErro = typeof invalido === 'string' ? invalido : invalido ? 'Campo obrigatório' : null;
+
+  const mensagemErro = typeof invalido === 'string' ? invalido : null;
 
   return (
     <View style={[Styles.field, style]}>

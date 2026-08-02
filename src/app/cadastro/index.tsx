@@ -1,191 +1,78 @@
 import axios from 'axios';
 import { Stack, router } from 'expo-router';
 import { useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View, } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import Button from '@/components/Button';
 import Input from '@/components/Input';
 import Select from '@/components/Select';
+import { createUserSchema, type CreateUserDTO } from '@/validacao/usuario';
+
+const TIPOS_USUARIO = ['coordenador', 'voluntario', 'familiar', 'enfermeiro'];
+const OPCOES_SEXO = ['feminino', 'masculino'];
+
+const formatCpf = (text: string) => {
+  const nums = text.replace(/\D/g, '');
+  if (nums.length <= 3) return nums;
+  if (nums.length <= 6) return nums.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+  if (nums.length <= 9) return nums.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
+  return nums.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4').substring(0, 14);
+};
+
+const formatTelefone = (text: string) => {
+  const nums = text.replace(/\D/g, '');
+  if (nums.length <= 2) return nums;
+  if (nums.length <= 7) return nums.replace(/(\d{2})(\d{1,5})/, '($1) $2');
+  return nums.replace(/(\d{2})(\d{5})(\d{1,4})/, '($1) $2-$3').substring(0, 15);
+};
 
 export default function RegisterScreen() {
-  const [nome, setNome] = useState('');
-  const [email, setEmail] = useState('');
-  const [cpf, setCpf] = useState('');
-  const [senha, setSenha] = useState('');
-  const [endereco, setEndereco] = useState('');
-  const [telefone, setTelefone] = useState('');
-  const [tipoUsuario, setTipoUsuario] = useState('');
-  const [sexo, setSexo] = useState('');
+  const [form, setForm] = useState<Partial<CreateUserDTO>>({});
+  const [erros, setErros] = useState<Record<string, string>>({});
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSexoDropdownOpen, setIsSexoDropdownOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  const [nomeError, setNomeError] = useState('');
-  const [emailError, setEmailError] = useState('');
-  const [cpfError, setCpfError] = useState('');
-  const [senhaError, setSenhaError] = useState('');
-  const [enderecoError, setEnderecoError] = useState('');
-  const [telefoneError, setTelefoneError] = useState('');
-  const [tipoUsuarioError, setTipoUsuarioError] = useState('');
-  const [sexoError, setSexoError] = useState('');
   const [apiError, setApiError] = useState('');
 
-  const tipos: string[] = ['coordenador', 'voluntario', 'familiar', 'enfermeiro'];
-  const opcoesSexo: string[] = ['feminino', 'masculino'];
+  const setCampo = <K extends keyof CreateUserDTO>(campo: K, valor: CreateUserDTO[K]) => {
+    setForm((prev) => ({ ...prev, [campo]: valor }));
 
-  const formatCpf = (text: string) => {
-    const nums = text.replace(/\D/g, '');
-    if (nums.length <= 3) return nums;
-    if (nums.length <= 6) return nums.replace(/(\d{3})(\d{1,3})/, '$1.$2');
-    if (nums.length <= 9) return nums.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
-    return nums.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4').substring(0, 14);
-  };
-
-  const formatTelefone = (text: string) => {
-    const nums = text.replace(/\D/g, '');
-    if (nums.length <= 2) return nums;
-    if (nums.length <= 7) return nums.replace(/(\d{2})(\d{1,5})/, '($1) $2');
-    return nums.replace(/(\d{2})(\d{5})(\d{1,4})/, '($1) $2-$3').substring(0, 15);
-  };
-
-  const validateNome = () => {
-    if (nome.trim() === '') {
-      setNomeError('Campo obrigatório');
-      return false;
+    if (erros[campo]) {
+      setErros((prev) => ({ ...prev, [campo]: '' }));
     }
-    if (nome.trim().length < 3) {
-      setNomeError('Nome deve ter ao menos 3 caracteres');
-      return false;
-    }
-    setNomeError('');
-    return true;
-  };
-
-  const validateEmail = () => {
-    if (email.trim() === '') {
-      setEmailError('Campo obrigatório');
-      return false;
-    }
-    if (!email.includes('@')) {
-      setEmailError('O e-mail deve conter @');
-      return false;
-    }
-    setEmailError('');
-    return true;
-  };
-
-  const validateCpf = () => {
-    const apenasNumeros = cpf.replace(/\D/g, '');
-    if (apenasNumeros.length !== 11) {
-      setCpfError('CPF incompleto');
-      return false;
-    }
-    setCpfError('');
-    return true;
-  };
-
-  const validateSenha = () => {
-    if (senha.trim() === '') {
-      setSenhaError('Campo obrigatório');
-      return false;
-    }
-    if (senha.length < 6) {
-      setSenhaError('Senha deve ter ao menos 6 caracteres');
-      return false;
-    }
-    setSenhaError('');
-    return true;
-  };
-
-  const validateEndereco = () => {
-    if (endereco.trim() === '') {
-      setEnderecoError('Campo obrigatório');
-      return false;
-    }
-    if (endereco.trim().length < 5) {
-      setEnderecoError('Endereço deve ter ao menos 5 caracteres');
-      return false;
-    }
-    setEnderecoError('');
-    return true;
-  };
-
-  const validateTelefone = () => {
-    const apenasNumeros = telefone.replace(/\D/g, '');
-    if (apenasNumeros.length < 10) {
-      setTelefoneError('Telefone inválido');
-      return false;
-    }
-    setTelefoneError('');
-    return true;
-  };
-
-  const validateTipoUsuario = (value = tipoUsuario) => {
-    if (value === '') {
-      setTipoUsuarioError('Selecione um tipo');
-      return false;
-    }
-    setTipoUsuarioError('');
-    return true;
-  };
-
-  const validateSexo = (value = sexo) => {
-    if (value === '') {
-      setSexoError('Selecione o sexo');
-      return false;
-    }
-    setSexoError('');
-    return true;
   };
 
   const handleRegister = async () => {
-    const isNomeValid = validateNome();
-    const isEmailValid = validateEmail();
-    const isCpfValid = validateCpf();
-    const isSenhaValid = validateSenha();
-    const isEnderecoValid = validateEndereco();
-    const isTelefoneValid = validateTelefone();
-    const isTipoValid = validateTipoUsuario();
-    const isSexoValid = validateSexo();
+    setApiError('');
 
-    if (
-      !isNomeValid ||
-      !isEmailValid ||
-      !isCpfValid ||
-      !isSenhaValid ||
-      !isEnderecoValid ||
-      !isTelefoneValid ||
-      !isTipoValid ||
-      !isSexoValid
-    ) {
+    const result = createUserSchema.safeParse(form);
+
+    if (!result.success) {
+      const novosErros: Record<string, string> = {};
+      result.error.issues.forEach((issue) => {
+        const campo = issue.path[0] as string;
+        if (!novosErros[campo]) {
+          novosErros[campo] = issue.message;
+        }
+      });
+      setErros(novosErros);
       return;
     }
 
+    setErros({});
     setIsLoading(true);
-    setApiError('');
 
     try {
+      const dadosEnvio = {
+        ...result.data,
+        telefone: result.data.telefone.replace(/\D/g, ''),
+      };
+
       const response = await axios.post(
         'https://api-associacao-idosos.onrender.com/api/cadastrarUsuario',
-        {
-          nome: nome.trim(),
-          email: email.trim(),
-          cpf: cpf,
-          senha: senha,
-          tipo: tipoUsuario,
-          sexo: sexo,
-          endereco: endereco.trim(),
-          telefone: telefone.replace(/\D/g, ''),
-        }
+        dadosEnvio
       );
 
       if (response.status === 200 || response.status === 201) {
@@ -193,7 +80,6 @@ export default function RegisterScreen() {
         router.replace('/' as any);
       }
     } catch (error: any) {
-      console.log('Erro no cadastro:', error);
       if (error.response) {
         setApiError(
           error.response.data?.message || 'Erro ao realizar o cadastro. Tente novamente.'
@@ -233,116 +119,90 @@ export default function RegisterScreen() {
 
             <Input
               label="Nome completo"
-              value={nome}
+              value={form.nome ?? ''}
               editable={!isLoading}
-              onChangeText={(text) => {
-                setNome(text);
-                if (nomeError) setNomeError('');
-              }}
-              errorMessage={nomeError}
-              onBlur={validateNome}
+              onChangeText={(text) => setCampo('nome', text)}
+              errorMessage={erros.nome}
             />
 
             <Input
               label="E-mail"
-              value={email}
+              value={form.email ?? ''}
               keyboardType="email-address"
               autoCapitalize="none"
               editable={!isLoading}
-              onChangeText={(text) => {
-                setEmail(text);
-                if (emailError) setEmailError('');
-              }}
-              errorMessage={emailError}
-              onBlur={validateEmail}
+              onChangeText={(text) => setCampo('email', text)}
+              errorMessage={erros.email}
             />
 
             <Input
               label="CPF"
-              value={cpf}
+              value={form.cpf ?? ''}
               keyboardType="numeric"
               editable={!isLoading}
-              onChangeText={(text) => {
-                setCpf(formatCpf(text));
-                if (cpfError) setCpfError('');
-              }}
-              errorMessage={cpfError}
-              onBlur={validateCpf}
+              onChangeText={(text) => setCampo('cpf', formatCpf(text))}
+              errorMessage={erros.cpf}
             />
 
             <Input
               label="Telefone"
               placeholder="(99) 99999-9999"
-              value={telefone}
+              value={form.telefone ?? ''}
               keyboardType="numeric"
               editable={!isLoading}
-              onChangeText={(text) => {
-                setTelefone(formatTelefone(text));
-                if (telefoneError) setTelefoneError('');
-              }}
-              errorMessage={telefoneError}
-              onBlur={validateTelefone}
+              onChangeText={(text) => setCampo('telefone', formatTelefone(text))}
+              errorMessage={erros.telefone}
             />
 
             <Input
               label="Endereço Completo"
-              value={endereco}
+              value={form.endereco ?? ''}
               editable={!isLoading}
-              onChangeText={(text) => {
-                setEndereco(text);
-                if (enderecoError) setEnderecoError('');
-              }}
-              errorMessage={enderecoError}
-              onBlur={validateEndereco}
+              onChangeText={(text) => setCampo('endereco', text)}
+              errorMessage={erros.endereco}
             />
 
             <Input
               label="Senha"
-              value={senha}
+              value={form.senha ?? ''}
               secureTextEntry
               editable={!isLoading}
-              onChangeText={(text) => {
-                setSenha(text);
-                if (senhaError) setSenhaError('');
-              }}
-              errorMessage={senhaError}
-              onBlur={validateSenha}
+              onChangeText={(text) => setCampo('senha', text)}
+              errorMessage={erros.senha}
             />
 
             <Select
               label="Tipo de usuário"
-              selectedValue={tipoUsuario}
-              options={tipos}
+              selectedValue={form.tipo ?? ''}
+              options={TIPOS_USUARIO}
               isOpen={isDropdownOpen}
               placeholder="Selecione um tipo..."
-              errorMessage={tipoUsuarioError}
+              errorMessage={erros.tipo}
               disabled={isLoading}
               onToggle={() => {
                 setIsDropdownOpen(!isDropdownOpen);
                 setIsSexoDropdownOpen(false);
               }}
               onSelect={(item) => {
-                setTipoUsuario(item);
+                setCampo('tipo', item as CreateUserDTO['tipo']);
                 setIsDropdownOpen(false);
-                validateTipoUsuario(item);
               }}
             />
 
             <Select
               label="Sexo"
-              selectedValue={sexo}
-              options={opcoesSexo}
+              selectedValue={form.sexo ?? ''}
+              options={OPCOES_SEXO}
               isOpen={isSexoDropdownOpen}
-              errorMessage={sexoError}
+              errorMessage={erros.sexo}
               disabled={isLoading}
               onToggle={() => {
                 setIsSexoDropdownOpen(!isSexoDropdownOpen);
                 setIsDropdownOpen(false);
               }}
               onSelect={(item) => {
-                setSexo(item);
+                setCampo('sexo', item as CreateUserDTO['sexo']);
                 setIsSexoDropdownOpen(false);
-                validateSexo(item);
               }}
             />
 

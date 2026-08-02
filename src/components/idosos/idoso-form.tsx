@@ -1,35 +1,24 @@
-import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View, } from 'react-native';
-
 import { Campo } from '@/components/Campo';
 import { DateField } from '@/components/date-field';
 import { AvatarPhotoPicker } from '@/components/idosos/avatar-photo-picker';
 import { FormularioColors, Styles } from '@/constants/formularios-theme';
-import { idosoFormValuesVazio, type IdosoFormValues, type Sexo } from '@/types/idoso';
-
+import { idosoSchema, type IdosoFormValues } from '@/validacao/idosos';
+import { useState } from 'react';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 interface IdosoFormProps {
-  valoresIniciais?: IdosoFormValues;
+  valoresIniciais?: Partial<IdosoFormValues>;
   textoBotao: string;
   onSubmit: (dados: IdosoFormValues) => void;
 }
-
-const camposObrigatorios: (keyof IdosoFormValues)[] = [
-  'nome',
-  'dataNascimento',
-  'sexo',
-  'cpf',
-  'sus',
-  'rg',
-  'nacionalidade',
-  'naturalidade',
-];
-
-// Formatos exigidos pelo backend (idosoValidations.ts): CPF com 11 dígitos,
-// RG com 7 e cartão SUS com 15.
-const CPF_REGEX = /^\d{3}\.\d{3}\.\d{3}-\d{2}$/;
-const RG_REGEX = /^\d{1}\.\d{3}\.\d{3}$/;
-const SUS_REGEX = /^\d{15}$/;
 
 function formatarCpf(texto: string): string {
   const numeros = texto.replace(/\D/g, '').slice(0, 11);
@@ -40,10 +29,14 @@ function formatarCpf(texto: string): string {
 }
 
 function formatarRg(texto: string): string {
-  const numeros = texto.replace(/\D/g, '').slice(0, 7);
-  if (numeros.length <= 1) return numeros;
-  if (numeros.length <= 4) return numeros.replace(/(\d{1})(\d{1,3})/, '$1.$2');
-  return numeros.replace(/(\d{1})(\d{3})(\d{1,3})/, '$1.$2.$3');
+  const numeros = texto.replace(/\D/g, '').slice(0, 9);
+
+  if (numeros.length <= 3) return numeros;
+  if (numeros.length <= 6) return numeros.replace(/^(\d{1,3})(\d{1,3})$/, '$1.$2');
+  if (numeros.length === 7) return numeros.replace(/^(\d{1})(\d{3})(\d{3})$/, '$1.$2.$3');
+  if (numeros.length === 8) return numeros.replace(/^(\d{2})(\d{3})(\d{3})$/, '$1.$2.$3');
+
+  return numeros.replace(/^(\d{2})(\d{3})(\d{3})(\d{1})$/, '$1.$2.$3-$4');
 }
 
 function formatarSus(texto: string): string {
@@ -51,50 +44,35 @@ function formatarSus(texto: string): string {
 }
 
 export function IdosoForm({ valoresIniciais, textoBotao, onSubmit }: IdosoFormProps) {
-  const [form, setForm] = useState<IdosoFormValues>(valoresIniciais ?? idosoFormValuesVazio);
-  const [enviarVazio, setEnviarVazio] = useState(false);
+  const [form, setForm] = useState<Partial<IdosoFormValues>>(valoresIniciais ?? {});
+  const [erros, setErros] = useState<Record<string, string>>({});
 
   const setCampo = <K extends keyof IdosoFormValues>(campo: K, valor: IdosoFormValues[K]) => {
     setForm((prev) => ({ ...prev, [campo]: valor }));
-  };
 
-  const ehObrigatorio = (campo: keyof IdosoFormValues) => camposObrigatorios.includes(campo);
-
-  const erroDoCampo = (campo: keyof IdosoFormValues): string | null => {
-    const valorBruto = form[campo];
-    const valor = typeof valorBruto === 'string' ? valorBruto : '';
-
-    if (ehObrigatorio(campo) && !valor) return 'Campo obrigatório';
-    if (!valor) return null;
-
-    switch (campo) {
-      case 'nome':
-        return valor.trim().length < 3 ? 'Nome deve ter pelo menos 3 caracteres' : null;
-      case 'cpf':
-        return CPF_REGEX.test(valor) ? null : 'CPF precisa ter 11 dígitos (xxx.xxx.xxx-xx)';
-      case 'rg':
-        return RG_REGEX.test(valor) ? null : 'RG precisa ter 7 dígitos (x.xxx.xxx)';
-      case 'sus':
-        return SUS_REGEX.test(valor) ? null : `Cartão SUS precisa ter 15 dígitos (${valor.length}/15)`;
-      case 'nacionalidade':
-        return valor.trim().length < 3 ? 'Nacionalidade deve ter pelo menos 3 caracteres' : null;
-      case 'naturalidade':
-        return valor.trim().length < 3 ? 'Naturalidade deve ter pelo menos 3 caracteres' : null;
-      default:
-        return null;
+    if (erros[campo]) {
+      setErros((prev) => ({ ...prev, [campo]: '' }));
     }
   };
-
-  const erroExibido = (campo: keyof IdosoFormValues) => (enviarVazio ? erroDoCampo(campo) : null);
 
   const handleSubmit = () => {
-    setEnviarVazio(true);
-    const todosCampos = Object.keys(idosoFormValuesVazio) as (keyof IdosoFormValues)[];
-    const camposComErro = todosCampos.filter((campo) => !!erroDoCampo(campo));
-    if (camposComErro.length > 0) {
+    const result = idosoSchema.safeParse(form);
+
+    if (!result.success) {
+      const novosErros: Record<string, string> = {};
+      result.error.issues.forEach((issue) => {
+        const campo = issue.path[0] as string;
+        if (!novosErros[campo]) {
+          novosErros[campo] = issue.message;
+        }
+      });
+
+      setErros(novosErros);
       return;
     }
-    onSubmit(form);
+
+    setErros({});
+    onSubmit(result.data);
   };
 
   return (
@@ -109,61 +87,61 @@ export function IdosoForm({ valoresIniciais, textoBotao, onSubmit }: IdosoFormPr
             onChangeUri={(uri) => setCampo('foto', uri)}
           />
 
-          <Campo label="Nome completo" obrigatorio invalido={erroExibido('nome')}>
+          <Campo label="Nome completo" obrigatorio invalido={erros.nome}>
             <TextInput
-              style={[Styles.input, !!erroExibido('nome') && Styles.inputInvalido]}
+              style={[Styles.input, !!erros.nome && Styles.inputInvalido]}
               placeholder="Nome completo"
               placeholderTextColor={FormularioColors.placeholder}
-              value={form.nome}
+              value={form.nome ?? ''}
               onChangeText={(texto) => setCampo('nome', texto)}
             />
           </Campo>
 
           <View style={Styles.row}>
-            <Campo label="Data de nascimento" obrigatorio invalido={erroExibido('dataNascimento')} style={Styles.flex1}>
+            <Campo label="Data de nascimento" obrigatorio invalido={erros.dataNascimento} style={Styles.flex1}>
               <DateField
                 value={form.dataNascimento}
                 onChange={(valor) => setCampo('dataNascimento', valor)}
-                invalido={!!erroExibido('dataNascimento')}
+                invalido={!!erros.dataNascimento}
                 maximumDate={new Date()}
               />
             </Campo>
 
-            <Campo label="Sexo" obrigatorio invalido={erroExibido('sexo')} style={Styles.flex1}>
+            <Campo label="Sexo" obrigatorio invalido={erros.sexo} style={Styles.flex1}>
               <View style={Styles.segmentedControl}>
                 <SegmentButton
                   label="Feminino"
                   selected={form.sexo === 'feminino'}
-                  onPress={() => setCampo('sexo', 'feminino' as Sexo)}
+                  onPress={() => setCampo('sexo', 'feminino')}
                 />
                 <SegmentButton
                   label="Masculino"
                   selected={form.sexo === 'masculino'}
-                  onPress={() => setCampo('sexo', 'masculino' as Sexo)}
+                  onPress={() => setCampo('sexo', 'masculino')}
                 />
               </View>
             </Campo>
           </View>
 
           <View style={Styles.row}>
-            <Campo label="CPF" obrigatorio invalido={erroExibido('cpf')} style={Styles.flex1}>
+            <Campo label="CPF" obrigatorio invalido={erros.cpf} style={Styles.flex1}>
               <TextInput
-                style={[Styles.input, !!erroExibido('cpf') && Styles.inputInvalido]}
+                style={[Styles.input, !!erros.cpf && Styles.inputInvalido]}
                 placeholder="xxx.xxx.xxx-xx"
                 placeholderTextColor={FormularioColors.placeholder}
-                value={form.cpf}
+                value={form.cpf ?? ''}
                 onChangeText={(texto) => setCampo('cpf', formatarCpf(texto))}
                 keyboardType="number-pad"
                 maxLength={14}
               />
             </Campo>
 
-            <Campo label="SUS" obrigatorio invalido={erroExibido('sus')} style={Styles.flex1}>
+            <Campo label="SUS" obrigatorio invalido={erros.sus} style={Styles.flex1}>
               <TextInput
-                style={[Styles.input, !!erroExibido('sus') && Styles.inputInvalido]}
+                style={[Styles.input, !!erros.sus && Styles.inputInvalido]}
                 placeholder="xxxxxxxxxxxxxxx"
                 placeholderTextColor={FormularioColors.placeholder}
-                value={form.sus}
+                value={form.sus ?? ''}
                 onChangeText={(texto) => setCampo('sus', formatarSus(texto))}
                 keyboardType="number-pad"
                 maxLength={15}
@@ -171,15 +149,15 @@ export function IdosoForm({ valoresIniciais, textoBotao, onSubmit }: IdosoFormPr
             </Campo>
           </View>
 
-          <Campo label="RG" obrigatorio invalido={erroExibido('rg')}>
+          <Campo label="RG" obrigatorio invalido={erros.rg}>
             <TextInput
-              style={[Styles.input, !!erroExibido('rg') && Styles.inputInvalido]}
+              style={[Styles.input, !!erros.rg && Styles.inputInvalido]}
               placeholder="x.xxx.xxx"
               placeholderTextColor={FormularioColors.placeholder}
-              value={form.rg}
+              value={form.rg ?? ''}
               onChangeText={(texto) => setCampo('rg', formatarRg(texto))}
               keyboardType="number-pad"
-              maxLength={9}
+              maxLength={12}
             />
           </Campo>
 
@@ -197,24 +175,24 @@ export function IdosoForm({ valoresIniciais, textoBotao, onSubmit }: IdosoFormPr
                 style={Styles.input}
                 placeholder="Exemplo: SSP-PB"
                 placeholderTextColor={FormularioColors.placeholder}
-                value={form.orgaoEmissorRg}
+                value={form.orgaoEmissorRg ?? ''}
                 onChangeText={(texto) => setCampo('orgaoEmissorRg', texto)}
               />
             </Campo>
           </View>
 
-          <Campo label="Nacionalidade" obrigatorio invalido={erroExibido('nacionalidade')}>
+          <Campo label="Nacionalidade" obrigatorio invalido={erros.nacionalidade}>
             <TextInput
-              style={[Styles.input, !!erroExibido('nacionalidade') && Styles.inputInvalido]}
-              value={form.nacionalidade}
+              style={[Styles.input, !!erros.nacionalidade && Styles.inputInvalido]}
+              value={form.nacionalidade ?? ''}
               onChangeText={(texto) => setCampo('nacionalidade', texto)}
             />
           </Campo>
 
-          <Campo label="Naturalidade" obrigatorio invalido={erroExibido('naturalidade')}>
+          <Campo label="Naturalidade" obrigatorio invalido={erros.naturalidade}>
             <TextInput
-              style={[Styles.input, !!erroExibido('naturalidade') && Styles.inputInvalido]}
-              value={form.naturalidade}
+              style={[Styles.input, !!erros.naturalidade && Styles.inputInvalido]}
+              value={form.naturalidade ?? ''}
               onChangeText={(texto) => setCampo('naturalidade', texto)}
             />
           </Campo>
@@ -246,4 +224,4 @@ function SegmentButton({
       <Text style={[Styles.segmentButtonText, selected && Styles.segmentButtonTextSelected]}>{label}</Text>
     </TouchableOpacity>
   );
-};
+}

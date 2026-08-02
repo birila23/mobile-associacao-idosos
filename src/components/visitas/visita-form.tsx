@@ -17,7 +17,7 @@ export function VisitaForm({ valoresIniciais, textoBotao, onSubmit }: VisitaForm
 
   const setCampo = <K extends keyof VisitaFormValues>(campo: K, valor: VisitaFormValues[K]) => {
     setForm((prev) => ({ ...prev, [campo]: valor }));
-    
+
     if (erros[campo]) {
       setErros((prev) => ({ ...prev, [campo]: '' }));
     }
@@ -27,11 +27,12 @@ export function VisitaForm({ valoresIniciais, textoBotao, onSubmit }: VisitaForm
     const result = visitaSchema.safeParse(form);
 
     if (!result.success) {
-
       const novosErros: Record<string, string> = {};
       result.error.issues.forEach((issue) => {
         const campo = issue.path[0] as string;
-        novosErros[campo] = issue.message;
+        if (!novosErros[campo]) {
+          novosErros[campo] = issue.message;
+        }
       });
 
       setErros(novosErros);
@@ -47,7 +48,7 @@ export function VisitaForm({ valoresIniciais, textoBotao, onSubmit }: VisitaForm
       <ScrollView contentContainerStyle={Styles.scrollContainer} keyboardShouldPersistTaps="handled">
         <View style={Styles.card}>
 
-          <Campo label="Nome completo" obrigatorio invalido={!!erros.nome}>
+          <Campo label="Nome completo" obrigatorio invalido={erros.nome}>
             <TextInput
               style={[Styles.input, !!erros.nome && Styles.inputInvalido]}
               placeholder="Nome completo"
@@ -55,16 +56,15 @@ export function VisitaForm({ valoresIniciais, textoBotao, onSubmit }: VisitaForm
               value={form.nome ?? ''}
               onChangeText={(texto) => setCampo('nome', texto)}
             />
-            {erros.nome && <Text style={Styles.erroTexto}>{erros.nome}</Text>}
           </Campo>
+
           <View style={Styles.row}>
-            <Campo label="Data da Visita" obrigatorio invalido={!!erros.data} style={Styles.flex1}>
+            <Campo label="Data da Visita" obrigatorio invalido={erros.data} style={Styles.flex1}>
               <DateField
                 value={form.data}
                 onChange={(valor) => setCampo('data', valor)}
                 invalido={!!erros.data}
               />
-              {erros.data && <Text style={Styles.erroTexto}>{erros.data}</Text>}
             </Campo>
           </View>
 
